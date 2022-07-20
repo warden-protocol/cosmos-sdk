@@ -135,7 +135,7 @@ func TestAminoCodecFullDecodeAndEncode(t *testing.T) {
 
 	// Marshalling/unmarshalling the tx wrapped in a struct should work.
 	txRequest := &cli.BroadcastReq{
-		Mode: "block",
+		Mode: "sync",
 		Tx:   tx,
 	}
 	_, err = legacyCdc.MarshalJSON(txRequest)
