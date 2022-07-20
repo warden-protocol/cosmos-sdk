@@ -14,6 +14,9 @@ In order to submit a proposal with `submit-proposal` you now need to pass a `pro
 You can still use the old way by using `submit-legacy-proposal`. This is not recommended.
 More information can be found in the gov module [client documentation](https://docs.cosmos.network/v0.46/modules/gov/07_client.html).
 
+[LINK TUTORIAL]
+[EXPLAIN ABOUT METADATA WORK]
+
 ### Keyring
 
 The keyring has been refactored in v0.46.
@@ -51,7 +54,7 @@ To improve clarity of the API, some renaming and improvements has been done:
 | `x/gov`   | `keeper.RefundDeposits`            | `keeper.RefundAndDeleteDeposits`     |
 | `x/{mod}` | package `legacy`                   | package `migrations`                 |
 
-For the exhaustive list of API renaming, please refer to the [CHANGELOG](https://github.com/cosmos/cosmos-sdk/blob/main/CHANGELOG.md).
+[BE EXAUSTIVE]
 
 ### new packages
 
