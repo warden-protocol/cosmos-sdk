@@ -147,6 +147,7 @@ type SimApp struct {
 	*runtime.App
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
+	txConfig          client.TxConfig
 	interfaceRegistry codectypes.InterfaceRegistry
 
 	// keys to access the substores
@@ -218,6 +219,7 @@ func NewSimApp(
 		&appBuilder,
 		&app.appCodec,
 		&app.legacyAmino,
+		&app.txConfig,
 		&app.interfaceRegistry,
 		&app.AccountKeeper,
 		&app.BankKeeper,
@@ -338,6 +340,11 @@ func (app *SimApp) AppCodec() codec.Codec {
 // InterfaceRegistry returns SimApp's InterfaceRegistry
 func (app *SimApp) InterfaceRegistry() codectypes.InterfaceRegistry {
 	return app.interfaceRegistry
+}
+
+// TxConfig returns SimApp's TxConfig
+func (app *SimApp) TxConfig() client.TxConfig {
+	return app.txConfig
 }
 
 // GetKey returns the KVStoreKey for the provided store key.
