@@ -29,6 +29,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store"
+	simutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -39,8 +40,16 @@ import (
 
 // NewRootCmd creates a new root command for simd. It is called once in the
 // main function.
-func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
-	encodingConfig := simapp.MakeTestEncodingConfig()
+func NewRootCmd() *cobra.Command {
+	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
+	tempApp := simapp.NewSimApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simutil.EmptyAppOptions{})
+	encodingConfig := params.EncodingConfig{
+		InterfaceRegistry: tempApp.InterfaceRegistry(),
+		Codec:             tempApp.AppCodec(),
+		TxConfig:          tempApp.TxConfig(),
+		Amino:             tempApp.LegacyAmino(),
+	}
+
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Codec).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
@@ -82,7 +91,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	initRootCmd(rootCmd, encodingConfig)
 
-	return rootCmd, encodingConfig
+	return rootCmd
 }
 
 // initTendermintConfig helps to override default Tendermint Config values.
