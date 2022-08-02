@@ -7,11 +7,10 @@ import (
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/pkg/errors"
 
-	tmbtcec "github.com/tendermint/btcd/btcec"
-
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 )
 
 // discoverLedger defines a function to be invoked at runtime for discovering
@@ -45,6 +44,10 @@ type (
 		Path         hd.BIP44Params
 	}
 )
+
+func SetDiscoverLedger(fn discoverLedgerFn) {
+	discoverLedger = fn
+}
 
 // NewPrivKeySecp256k1Unsafe will generate a new key and store the public key for later use.
 //
@@ -168,15 +171,6 @@ func warnIfErrors(f func() error) {
 	}
 }
 
-func convertDERtoBER(signatureDER []byte) ([]byte, error) {
-	sigDER, err := btcec.ParseDERSignature(signatureDER, btcec.S256())
-	if err != nil {
-		return nil, err
-	}
-	sigBER := tmbtcec.Signature{R: sigDER.R, S: sigDER.S}
-	return sigBER.Serialize(), nil
-}
-
 func getDevice() (SECP256K1, error) {
 	if discoverLedger == nil {
 		return nil, errors.New("no Ledger discovery function defined")
@@ -215,12 +209,12 @@ func sign(device SECP256K1, pkl PrivKeyLedgerSecp256k1, msg []byte) ([]byte, err
 		return nil, err
 	}
 
-	sig, err := device.SignSECP256K1(pkl.Path.DerivationPath(), msg)
+	sig, err := device.SignSECP256K1(pkl.Path.LedgerDerivationPath(), msg)
 	if err != nil {
 		return nil, err
 	}
 
-	return convertDERtoBER(sig)
+	return sig, nil
 }
 
 // getPubKeyUnsafe reads the pubkey from a ledger device
@@ -232,10 +226,12 @@ func sign(device SECP256K1, pkl PrivKeyLedgerSecp256k1, msg []byte) ([]byte, err
 // since this involves IO, it may return an error, which is not exposed
 // in the PubKey interface, so this function allows better error handling
 func getPubKeyUnsafe(device SECP256K1, path hd.BIP44Params) (types.PubKey, error) {
-	publicKey, err := device.GetPublicKeySECP256K1(path.DerivationPath())
+	publicKey, err := device.GetPublicKeySECP256K1(path.LedgerDerivationPath())
 	if err != nil {
 		return nil, fmt.Errorf("please open Cosmos app on the Ledger device - error: %v", err)
 	}
+
+	publicKey = append([]byte{byte(4)}, publicKey...)
 
 	// re-serialize in the 33-byte compressed format
 	cmp, err := btcec.ParsePubKey(publicKey, btcec.S256())
@@ -246,7 +242,7 @@ func getPubKeyUnsafe(device SECP256K1, path hd.BIP44Params) (types.PubKey, error
 	compressedPublicKey := make([]byte, secp256k1.PubKeySize)
 	copy(compressedPublicKey, cmp.SerializeCompressed())
 
-	return &secp256k1.PubKey{Key: compressedPublicKey}, nil
+	return &ethsecp256k1.PubKey{Key: compressedPublicKey}, nil
 }
 
 // getPubKeyAddr reads the pubkey and the address from a ledger device.
@@ -256,10 +252,12 @@ func getPubKeyUnsafe(device SECP256K1, path hd.BIP44Params) (types.PubKey, error
 // Since this involves IO, it may return an error, which is not exposed
 // in the PubKey interface, so this function allows better error handling.
 func getPubKeyAddrSafe(device SECP256K1, path hd.BIP44Params, hrp string) (types.PubKey, string, error) {
-	publicKey, addr, err := device.GetAddressPubKeySECP256K1(path.DerivationPath(), hrp)
+	publicKey, addr, err := device.GetAddressPubKeySECP256K1(path.LedgerDerivationPath(), hrp)
 	if err != nil {
 		return nil, "", fmt.Errorf("%w: address rejected for path %s", err, path.String())
 	}
+
+	publicKey = append([]byte{byte(4)}, publicKey...)
 
 	// re-serialize in the 33-byte compressed format
 	cmp, err := btcec.ParsePubKey(publicKey, btcec.S256())
@@ -270,5 +268,5 @@ func getPubKeyAddrSafe(device SECP256K1, path hd.BIP44Params, hrp string) (types
 	compressedPublicKey := make([]byte, secp256k1.PubKeySize)
 	copy(compressedPublicKey, cmp.SerializeCompressed())
 
-	return &secp256k1.PubKey{Key: compressedPublicKey}, addr, nil
+	return &ethsecp256k1.PubKey{Key: compressedPublicKey}, addr, nil
 }

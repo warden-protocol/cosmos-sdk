@@ -3,18 +3,13 @@
 
 package ledger
 
-import ledger "github.com/cosmos/ledger-cosmos-go"
+import "errors"
 
 // If ledger support (build tag) has been enabled, which implies a CGO dependency,
 // set the discoverLedger function which is responsible for loading the Ledger
 // device at runtime or returning an error.
 func init() {
 	discoverLedger = func() (SECP256K1, error) {
-		device, err := ledger.FindLedgerCosmosUserApp()
-		if err != nil {
-			return nil, err
-		}
-
-		return device, nil
+		return nil, errors.New("Ledger discovery must be passed in and is not implemented here")
 	}
 }
