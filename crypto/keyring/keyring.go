@@ -151,6 +151,8 @@ type Options struct {
 	SupportedAlgos SigningAlgoList
 	// supported signing algorithms for Ledger
 	SupportedAlgosLedger SigningAlgoList
+	// define Ledger Derivation function
+	LedgerDerivation func() (ledger.SECP256K1, error)
 }
 
 // NewInMemory creates a transient keyring useful for testing
@@ -209,6 +211,10 @@ func newKeystore(kr keyring.Keyring, opts ...Option) keystore {
 
 	for _, optionFn := range opts {
 		optionFn(&options)
+	}
+
+	if options.LedgerDerivation != nil {
+		ledger.SetDiscoverLedger(options.LedgerDerivation)
 	}
 
 	return keystore{kr, options}

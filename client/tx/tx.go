@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -21,6 +22,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
+	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	etherminttypes "github.com/evmos/ethermint/types"
 )
 
 // GenerateOrBroadcastTxCLI will either generate and print and unsigned transaction
@@ -394,6 +397,35 @@ func Sign(txf Factory, name string, txBuilder client.TxBuilder, overwriteSig boo
 	sigBytes, _, err := txf.keybase.Sign(name, bytesToSign)
 	if err != nil {
 		return err
+	}
+
+	// Modify Ledger signature to use EIP712 extension
+	info, err := txf.Keybase().Key(name)
+	if err != nil {
+		return fmt.Errorf("Error retrieving key type: %v\n", err)
+	}
+
+	if info.GetType().String() == "ledger" {
+		extensionBuilder, ok := txBuilder.(authtx.ExtensionOptionsTxBuilder)
+		if !ok {
+			return fmt.Errorf("Error setting extension options: cannot cast to ExtensionOptionsTxBuilder")
+		}
+
+		chainID, err := etherminttypes.ParseChainID(txf.chainID)
+		if err != nil {
+			return fmt.Errorf("Error parsing chain id: %v\n", err)
+		}
+
+		// Add ExtensionOptionsWeb3Tx extension
+		var option *codectypes.Any
+		option, err = codectypes.NewAnyWithValue(&etherminttypes.ExtensionOptionsWeb3Tx{
+			FeePayer:         info.GetAddress().String(),
+			TypedDataChainID: chainID.Uint64(),
+			FeePayerSig:      sigBytes,
+		})
+
+		extensionBuilder.SetExtensionOptions(option)
+		return nil
 	}
 
 	// Construct the SignatureV2 struct
