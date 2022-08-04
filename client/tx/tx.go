@@ -406,11 +406,13 @@ func Sign(txf Factory, name string, txBuilder client.TxBuilder, overwriteSig boo
 	}
 
 	if info.GetType().String() == "ledger" {
+		// Get extension builder to set Web3 extension
 		extensionBuilder, ok := txBuilder.(authtx.ExtensionOptionsTxBuilder)
 		if !ok {
 			return fmt.Errorf("Error setting extension options: cannot cast to ExtensionOptionsTxBuilder")
 		}
 
+		// Parse Chain ID as UInt
 		chainID, err := etherminttypes.ParseChainID(txf.chainID)
 		if err != nil {
 			return fmt.Errorf("Error parsing chain id: %v\n", err)
@@ -423,8 +425,25 @@ func Sign(txf Factory, name string, txBuilder client.TxBuilder, overwriteSig boo
 			TypedDataChainID: chainID.Uint64(),
 			FeePayerSig:      sigBytes,
 		})
-
 		extensionBuilder.SetExtensionOptions(option)
+
+		// Set blank signature data with Amino Sign Type
+		// (Regardless of input signMode, Evmos requires an Amino payload for Ledger)
+		sigData = signing.SingleSignatureData{
+			SignMode:  signing.SignMode_SIGN_MODE_LEGACY_AMINO_JSON,
+			Signature: nil,
+		}
+		sig = signing.SignatureV2{
+			PubKey:   pubKey,
+			Data:     &sigData,
+			Sequence: txf.Sequence(),
+		}
+
+		err = txBuilder.SetSignatures(sig)
+		if err != nil {
+			return fmt.Errorf("Unable to set signatures on payload: %v\n", err)
+		}
+
 		return nil
 	}
 
