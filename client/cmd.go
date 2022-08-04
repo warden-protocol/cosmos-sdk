@@ -10,7 +10,6 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -248,20 +247,12 @@ func readTxCommandFlags(clientCtx Context, flagSet *pflag.FlagSet) (Context, err
 
 	if clientCtx.From == "" || flagSet.Changed(flags.FlagFrom) {
 		from, _ := flagSet.GetString(flags.FlagFrom)
-		fromAddr, fromName, keyType, err := GetFromFields(clientCtx, clientCtx.Keyring, from)
+		fromAddr, fromName, _, err := GetFromFields(clientCtx, clientCtx.Keyring, from)
 		if err != nil {
 			return clientCtx, err
 		}
 
 		clientCtx = clientCtx.WithFrom(from).WithFromAddress(fromAddr).WithFromName(fromName)
-
-		// If the `from` signer account is a ledger key, we need to use
-		// SIGN_MODE_AMINO_JSON, because ledger doesn't support proto yet.
-		// ref: https://github.com/cosmos/cosmos-sdk/issues/8109
-		if keyType == keyring.TypeLedger && clientCtx.SignModeStr != flags.SignModeLegacyAminoJSON {
-			fmt.Println("Default sign-mode 'direct' not supported by Ledger, using sign-mode 'amino-json'.")
-			clientCtx = clientCtx.WithSignModeStr(flags.SignModeLegacyAminoJSON)
-		}
 	}
 
 	if !clientCtx.IsAux || flagSet.Changed(flags.FlagAux) {
