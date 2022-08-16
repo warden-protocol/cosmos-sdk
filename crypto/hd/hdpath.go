@@ -138,22 +138,6 @@ func (p BIP44Params) DerivationPath() []uint32 {
 	}
 }
 
-// Return params in an array formatted for Ledger
-func (p BIP44Params) LedgerDerivationPath() []uint32 {
-	change := uint32(0)
-	if p.Change {
-		change = 1
-	}
-
-	return []uint32{
-		0x80000000 + p.Purpose,
-		0x80000000 + p.CoinType,
-		0x80000000 + p.Account,
-		change,
-		p.AddressIndex,
-	}
-}
-
 // String returns the full absolute HD path of the BIP44 (https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki) params:
 // m / purpose' / coin_type' / account' / change / address_index
 func (p BIP44Params) String() string {
