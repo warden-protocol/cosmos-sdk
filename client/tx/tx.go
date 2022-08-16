@@ -14,7 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -22,8 +21,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
-	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
-	etherminttypes "github.com/evmos/ethermint/types"
 )
 
 // GenerateOrBroadcastTxCLI will either generate and print and unsigned transaction
@@ -399,54 +396,6 @@ func Sign(txf Factory, name string, txBuilder client.TxBuilder, overwriteSig boo
 		return err
 	}
 
-	// Modify Ledger signature to use EIP712 extension
-	info, err := txf.Keybase().Key(name)
-	if err != nil {
-		return fmt.Errorf("Error retrieving key type: %v\n", err)
-	}
-
-	if info.GetType().String() == "ledger" {
-		// Get extension builder to set Web3 extension
-		extensionBuilder, ok := txBuilder.(authtx.ExtensionOptionsTxBuilder)
-		if !ok {
-			return fmt.Errorf("Error setting extension options: cannot cast to ExtensionOptionsTxBuilder")
-		}
-
-		// Parse Chain ID as UInt
-		chainID, err := etherminttypes.ParseChainID(txf.chainID)
-		if err != nil {
-			return fmt.Errorf("Error parsing chain id: %v\n", err)
-		}
-
-		// Add ExtensionOptionsWeb3Tx extension
-		var option *codectypes.Any
-		option, err = codectypes.NewAnyWithValue(&etherminttypes.ExtensionOptionsWeb3Tx{
-			FeePayer:         info.GetAddress().String(),
-			TypedDataChainID: chainID.Uint64(),
-			FeePayerSig:      sigBytes,
-		})
-		extensionBuilder.SetExtensionOptions(option)
-
-		// Set blank signature data with Amino Sign Type
-		// (Regardless of input signMode, Evmos requires an Amino payload for Ledger)
-		sigData = signing.SingleSignatureData{
-			SignMode:  signing.SignMode_SIGN_MODE_LEGACY_AMINO_JSON,
-			Signature: nil,
-		}
-		sig = signing.SignatureV2{
-			PubKey:   pubKey,
-			Data:     &sigData,
-			Sequence: txf.Sequence(),
-		}
-
-		err = txBuilder.SetSignatures(sig)
-		if err != nil {
-			return fmt.Errorf("Unable to set signatures on payload: %v\n", err)
-		}
-
-		return nil
-	}
-
 	// Construct the SignatureV2 struct
 	sigData = signing.SingleSignatureData{
 		SignMode:  signMode,
@@ -459,10 +408,19 @@ func Sign(txf Factory, name string, txBuilder client.TxBuilder, overwriteSig boo
 	}
 
 	if overwriteSig {
-		return txBuilder.SetSignatures(sig)
+		err = txBuilder.SetSignatures(sig)
+	} else {
+		prevSignatures = append(prevSignatures, sig)
+		err = txBuilder.SetSignatures(prevSignatures...)
 	}
-	prevSignatures = append(prevSignatures, sig)
-	return txBuilder.SetSignatures(prevSignatures...)
+
+	if err != nil {
+		return fmt.Errorf("Unable to set signatures on payload: %w", err)
+	}
+
+	// Run optional reformatting if desired. By default, this is unset
+	// and will return nil.
+	return txf.ReformatTx(name, txBuilder)
 }
 
 // GasEstimateResponse defines a response definition for tx gas estimation.

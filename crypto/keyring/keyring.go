@@ -153,6 +153,13 @@ type Options struct {
 	SupportedAlgosLedger SigningAlgoList
 	// define Ledger Derivation function
 	LedgerDerivation func() (ledger.SECP256K1, error)
+	// define Ledger key generation function
+	LedgerCreateKey func([]byte) types.PubKey
+	// define Ledger app name
+	LedgerAppName string
+	// indicate whether Ledger should skip DER Conversion on signature,
+	// depending on which format (DER or BER) the Ledger app returns signatures
+	LedgerSigSkipDERConv bool
 }
 
 // NewInMemory creates a transient keyring useful for testing
@@ -215,6 +222,18 @@ func newKeystore(kr keyring.Keyring, opts ...Option) keystore {
 
 	if options.LedgerDerivation != nil {
 		ledger.SetDiscoverLedger(options.LedgerDerivation)
+	}
+
+	if options.LedgerCreateKey != nil {
+		ledger.SetCreatePubkey(options.LedgerCreateKey)
+	}
+
+	if options.LedgerAppName != "" {
+		ledger.SetAppName(options.LedgerAppName)
+	}
+
+	if options.LedgerSigSkipDERConv {
+		ledger.SetSkipDERConversion()
 	}
 
 	return keystore{kr, options}

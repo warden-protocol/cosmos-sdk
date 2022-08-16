@@ -20,6 +20,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// ReformatTx allows chains to optionally reformat transactions before broadcasting
+type ReformatTxFn func(chainID string, key keyring.Info, tx TxBuilder) error
+
 // Context implements a typical context created in SDK modules for transaction
 // handling and queries.
 type Context struct {
@@ -52,6 +55,8 @@ type Context struct {
 	NodeURI           string
 	FeeGranter        sdk.AccAddress
 	Viper             *viper.Viper
+	ReformatTx        ReformatTxFn
+	LedgerHasProtobuf bool
 
 	// TODO: Deprecated (remove).
 	LegacyAmino *codec.LegacyAmino
@@ -250,6 +255,20 @@ func (ctx Context) WithViper(prefix string) Context {
 	v.SetEnvPrefix(prefix)
 	v.AutomaticEnv()
 	ctx.Viper = v
+	return ctx
+}
+
+// WithReformatTx returns the context with the provided reformatting function, which
+// will conditionally reformat the transaction using the builder.
+func (ctx Context) WithReformatTx(reformatFn ReformatTxFn) Context {
+	ctx.ReformatTx = reformatFn
+	return ctx
+}
+
+// WithLedgerHasProto returns the context with the provided boolean value, indicating
+// whether the target Ledger application can support Protobuf payloads.
+func (ctx Context) WithLedgerHasProtobuf(val bool) Context {
+	ctx.LedgerHasProtobuf = val
 	return ctx
 }
 

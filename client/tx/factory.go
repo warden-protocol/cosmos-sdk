@@ -33,6 +33,7 @@ type Factory struct {
 	gasPrices          sdk.DecCoins
 	signMode           signing.SignMode
 	simulateAndExecute bool
+	reformatTx         client.ReformatTxFn
 }
 
 // NewFactoryCLI creates a new Factory.
@@ -78,6 +79,8 @@ func NewFactoryCLI(clientCtx client.Context, flagSet *pflag.FlagSet) Factory {
 
 	gasPricesStr, _ := flagSet.GetString(flags.FlagGasPrices)
 	f = f.WithGasPrices(gasPricesStr)
+
+	f = f.WithReformatTx(clientCtx.ReformatTx)
 
 	return f
 }
@@ -196,6 +199,29 @@ func (f Factory) WithSignMode(mode signing.SignMode) Factory {
 func (f Factory) WithTimeoutHeight(height uint64) Factory {
 	f.timeoutHeight = height
 	return f
+}
+
+// WithReformatTx returns a copy of the Factory with an updated reformat tx function,
+// which conditionally reformats the transaction data using the given TxBuilder.
+func (f Factory) WithReformatTx(reformatFunc client.ReformatTxFn) Factory {
+	f.reformatTx = reformatFunc
+	return f
+}
+
+// ReformatTx calls the transaction reformat function with the factory parameters and
+// returns the result.
+func (f Factory) ReformatTx(keyname string, builder client.TxBuilder) error {
+	if f.reformatTx == nil {
+		// Allow pass-through if the function does not exist
+		return nil
+	}
+
+	key, err := f.Keybase().Key(keyname)
+	if err != nil {
+		return fmt.Errorf("Error retrieving key from keyring: %w", err)
+	}
+
+	return f.reformatTx(f.chainID, key, builder)
 }
 
 // BuildUnsignedTx builds a transaction to be signed given a set of messages.
