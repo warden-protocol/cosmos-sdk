@@ -56,6 +56,7 @@ type Context struct {
 	NodeURI           string
 	FeeGranter        sdk.AccAddress
 	Viper             *viper.Viper
+	LedgerHasProtobuf bool
 
 	// TODO: Deprecated (remove).
 	LegacyAmino *codec.LegacyAmino
@@ -261,6 +262,13 @@ func (ctx Context) WithViper(prefix string) Context {
 // enables chains to preprocess the transaction using the builder.
 func (ctx Context) WithPreprocessTxHook(preprocessFn PreprocessTxFn) Context {
 	ctx.PreprocessTxHook = preprocessFn
+	return ctx
+}
+
+// WithLedgerHasProto returns the context with the provided boolean value, indicating
+// whether the target Ledger application can support Protobuf payloads.
+func (ctx Context) WithLedgerHasProtobuf(val bool) Context {
+	ctx.LedgerHasProtobuf = val
 	return ctx
 }
 
