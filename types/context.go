@@ -243,7 +243,7 @@ func (c Context) WithConsensusParams(params *tmproto.ConsensusParams) Context {
 }
 
 // WithEventManager returns a Context with an updated event manager
-func (c Context) WithEventManager(em EventManagerI) Context {
+func (c Context) WithEventManager(em *EventManager) Context {
 	c.eventManager = em
 	return c
 }

@@ -28,7 +28,6 @@ import (
 	"cosmossdk.io/core/appconfig"
 	"google.golang.org/protobuf/types/known/durationpb"
 
-	"github.com/cosmos/cosmos-sdk/runtime"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
@@ -51,6 +50,21 @@ import (
 )
 
 var (
+
+	// NOTE: The genutils module must occur after staking so that pools are
+	// properly initialized with tokens from genesis accounts.
+	// NOTE: The genutils module must also occur after auth so that it can access the params from auth.
+	// NOTE: Capability module must occur first so that it can initialize any capabilities
+	// so that other modules that want to create or claim capabilities afterwards in InitChain
+	// can do so safely.
+	genesisModuleOrder = []string{
+		capabilitytypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName,
+		distrtypes.ModuleName, stakingtypes.ModuleName, slashingtypes.ModuleName, govtypes.ModuleName,
+		minttypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName,
+		feegrant.ModuleName, nft.ModuleName, group.ModuleName, paramstypes.ModuleName, upgradetypes.ModuleName,
+		vestingtypes.ModuleName, consensustypes.ModuleName,
+	}
+
 	// module account permissions
 	moduleAccPerms = []*authmodulev1.ModuleAccountPermission{
 		{Account: authtypes.FeeCollectorName},
@@ -78,7 +92,7 @@ var (
 	AppConfig = appconfig.Compose(&appv1alpha1.Config{
 		Modules: []*appv1alpha1.ModuleConfig{
 			{
-				Name: runtime.ModuleName,
+				Name: "runtime",
 				Config: appconfig.WrapAny(&runtimev1alpha1.Module{
 					AppName: "SimApp",
 					// During begin block slashing happens after distr.BeginBlocker so that
@@ -94,39 +108,29 @@ var (
 						slashingtypes.ModuleName,
 						evidencetypes.ModuleName,
 						stakingtypes.ModuleName,
+						authtypes.ModuleName,
+						banktypes.ModuleName,
+						govtypes.ModuleName,
+						crisistypes.ModuleName,
 						genutiltypes.ModuleName,
 						authz.ModuleName,
+						feegrant.ModuleName,
+						nft.ModuleName,
+						group.ModuleName,
+						paramstypes.ModuleName,
+						vestingtypes.ModuleName,
+						consensustypes.ModuleName,
 					},
 					EndBlockers: []string{
 						crisistypes.ModuleName,
 						govtypes.ModuleName,
 						stakingtypes.ModuleName,
-						genutiltypes.ModuleName,
-						feegrant.ModuleName,
-						group.ModuleName,
-					},
-					OverrideStoreKeys: []*runtimev1alpha1.StoreKeyConfig{
-						{
-							ModuleName: authtypes.ModuleName,
-							KvStoreKey: "acc",
-						},
-					},
-					// NOTE: The genutils module must occur after staking so that pools are
-					// properly initialized with tokens from genesis accounts.
-					// NOTE: The genutils module must also occur after auth so that it can access the params from auth.
-					// NOTE: Capability module must occur first so that it can initialize any capabilities
-					// so that other modules that want to create or claim capabilities afterwards in InitChain
-					// can do so safely.
-					InitGenesis: []string{
 						capabilitytypes.ModuleName,
 						authtypes.ModuleName,
 						banktypes.ModuleName,
 						distrtypes.ModuleName,
-						stakingtypes.ModuleName,
 						slashingtypes.ModuleName,
-						govtypes.ModuleName,
 						minttypes.ModuleName,
-						crisistypes.ModuleName,
 						genutiltypes.ModuleName,
 						evidencetypes.ModuleName,
 						authz.ModuleName,
@@ -134,15 +138,22 @@ var (
 						nft.ModuleName,
 						group.ModuleName,
 						paramstypes.ModuleName,
+						consensustypes.ModuleName,
 						upgradetypes.ModuleName,
 						vestingtypes.ModuleName,
-						consensustypes.ModuleName,
 					},
+					OverrideStoreKeys: []*runtimev1alpha1.StoreKeyConfig{
+						{
+							ModuleName: authtypes.ModuleName,
+							KvStoreKey: "acc",
+						},
+					},
+					InitGenesis: genesisModuleOrder,
 					// When ExportGenesis is not specified, the export genesis module order
 					// is equal to the init genesis order
-					// ExportGenesis: []string{},
+					// ExportGenesis: genesisModuleOrder,
 					// Uncomment if you want to set a custom migration order here.
-					// OrderMigrations: []string{},
+					// OrderMigrations: nil,
 				}),
 			},
 			{

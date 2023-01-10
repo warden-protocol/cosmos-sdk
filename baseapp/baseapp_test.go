@@ -6,18 +6,17 @@ import (
 	"testing"
 	"time"
 
-	dbm "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	baseapptestutil "github.com/cosmos/cosmos-sdk/baseapp/testutil"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/store/metrics"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	"github.com/cosmos/cosmos-sdk/store/snapshots"
@@ -218,7 +217,7 @@ func TestSetLoader(t *testing.T) {
 	}
 
 	initStore := func(t *testing.T, db dbm.DB, storeKey string, k, v []byte) {
-		rs := rootmulti.NewStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+		rs := rootmulti.NewStore(db, log.NewNopLogger())
 		rs.SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningNothing))
 
 		key := sdk.NewKVStoreKey(storeKey)
@@ -238,7 +237,7 @@ func TestSetLoader(t *testing.T) {
 	}
 
 	checkStore := func(t *testing.T, db dbm.DB, ver int64, storeKey string, k, v []byte) {
-		rs := rootmulti.NewStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+		rs := rootmulti.NewStore(db, log.NewNopLogger())
 		rs.SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningDefault))
 
 		key := sdk.NewKVStoreKey(storeKey)

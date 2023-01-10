@@ -23,19 +23,16 @@ func (s TestSuite) TestAssertNoForgottenModules() { //nolint:govet
 		name     string
 		positive bool
 		modules  []string
-		pass     func(string) bool
 	}{
-		{"less modules", false, []string{"a"}, nil},
-		{"same modules", true, []string{"a", "b"}, nil},
-		{"more modules", true, []string{"a", "b", "c"}, nil},
-		{"pass module b", true, []string{"a"}, func(moduleName string) bool { return moduleName == "b" }},
+		{"same modules", true, []string{"a", "b"}},
+		{"more modules", true, []string{"a", "b", "c"}},
 	}
 
 	for _, tc := range tcs {
 		if tc.positive {
-			m.assertNoForgottenModules("x", tc.modules, tc.pass)
+			m.assertNoForgottenModules("x", tc.modules)
 		} else {
-			s.Panics(func() { m.assertNoForgottenModules("x", tc.modules, tc.pass) })
+			s.Panics(func() { m.assertNoForgottenModules("x", tc.modules) })
 		}
 	}
 }

@@ -10,7 +10,6 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/gov/simulation"
@@ -32,7 +31,6 @@ func TestRandomizedGenState(t *testing.T) {
 		Cdc:          cdc,
 		Rand:         r,
 		NumBonded:    3,
-		BondDenom:    sdk.DefaultBondDenom,
 		Accounts:     simtypes.RandomAccounts(r, 3),
 		InitialStake: sdkmath.NewInt(1000),
 		GenState:     make(map[string]json.RawMessage),

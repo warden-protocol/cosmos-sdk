@@ -65,7 +65,6 @@ As an example, the ATOM's metadata can be defined as follows:
 
 ```json
 {
-  "name": "atom",
   "description": "The native staking token of the Cosmos Hub.",
   "denom_units": [
     {

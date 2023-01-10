@@ -82,22 +82,20 @@ type proposal struct {
 	Messages []json.RawMessage `json:"messages,omitempty"`
 	Metadata string            `json:"metadata"`
 	Deposit  string            `json:"deposit"`
-	Title    string            `json:"title"`
-	Summary  string            `json:"summary"`
 }
 
 // parseSubmitProposal reads and parses the proposal.
-func parseSubmitProposal(cdc codec.Codec, path string) ([]sdk.Msg, string, string, string, sdk.Coins, error) {
+func parseSubmitProposal(cdc codec.Codec, path string) ([]sdk.Msg, string, sdk.Coins, error) {
 	var proposal proposal
 
 	contents, err := os.ReadFile(path)
 	if err != nil {
-		return nil, "", "", "", nil, err
+		return nil, "", nil, err
 	}
 
 	err = json.Unmarshal(contents, &proposal)
 	if err != nil {
-		return nil, "", "", "", nil, err
+		return nil, "", nil, err
 	}
 
 	msgs := make([]sdk.Msg, len(proposal.Messages))
@@ -105,7 +103,7 @@ func parseSubmitProposal(cdc codec.Codec, path string) ([]sdk.Msg, string, strin
 		var msg sdk.Msg
 		err := cdc.UnmarshalInterfaceJSON(anyJSON, &msg)
 		if err != nil {
-			return nil, "", "", "", nil, err
+			return nil, "", nil, err
 		}
 
 		msgs[i] = msg
@@ -113,8 +111,8 @@ func parseSubmitProposal(cdc codec.Codec, path string) ([]sdk.Msg, string, strin
 
 	deposit, err := sdk.ParseCoinsNormalized(proposal.Deposit)
 	if err != nil {
-		return nil, "", "", "", nil, err
+		return nil, "", nil, err
 	}
 
-	return msgs, proposal.Metadata, proposal.Title, proposal.Summary, deposit, nil
+	return msgs, proposal.Metadata, deposit, nil
 }

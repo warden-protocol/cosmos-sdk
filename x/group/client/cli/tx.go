@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -509,7 +508,7 @@ func MsgUpdateGroupPolicyDecisionPolicyCmd() *cobra.Command {
 	return cmd
 }
 
-// MsgUpdateGroupPolicyMetadataCmd creates a CLI command for Msg/UpdateGroupPolicyMetadata.
+// MsgUpdateGroupPolicyMetadataCmd creates a CLI command for Msg/MsgUpdateGroupPolicyMetadata.
 func MsgUpdateGroupPolicyMetadataCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-group-policy-metadata [admin] [group-policy-account] [new-metadata]",
@@ -566,8 +565,6 @@ Parameters:
 		"from_address": "cosmos1...",
 		"to_address": "cosmos1...",
 		"amount":[{"denom": "stake","amount": "10"}]
-		"title": "My proposal",
-		"summary": "This is a proposal to send 10 stake to cosmos1...",
 	}
 	],
 	"metadata": "4pIMOgIGx1vZGU=", // base64-encoded metadata
@@ -582,9 +579,6 @@ Parameters:
 
 			// Since the --from flag is not required on this CLI command, we
 			// ignore it, and just use the 1st proposer in the JSON file.
-			if prop.Proposers == nil || len(prop.Proposers) == 0 {
-				return errors.New("no proposers specified in proposal")
-			}
 			cmd.Flags().Set(flags.FlagFrom, prop.Proposers[0])
 
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -605,8 +599,6 @@ Parameters:
 				msgs,
 				prop.Metadata,
 				execFromString(execStr),
-				prop.Title,
-				prop.Summary,
 			)
 			if err != nil {
 				return err
@@ -744,7 +736,7 @@ Parameters:
 	return cmd
 }
 
-// MsgExecCmd creates a CLI command for Msg/Exec.
+// MsgExecCmd creates a CLI command for Msg/MsgExec.
 func MsgExecCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "exec [proposal-id]",

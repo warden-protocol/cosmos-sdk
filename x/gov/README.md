@@ -1149,15 +1149,9 @@ where `proposal.json` contains:
     }
   ],
   "metadata": "AQ==",
-  "deposit": "10stake",
-  "title": "Proposal Title",
-  "summary": "Proposal Summary"
+  "deposit": "10stake"
 }
 ```
-
-:::note
-By default the metadata, summary and title are both limited by 255 characters, this can be overridden by the application developer.
-:::
 
 ##### submit-legacy-proposal
 
@@ -1296,9 +1290,7 @@ Example Output:
       }
     ],
     "votingStartTime": "2021-09-16T19:40:08.712440474Z",
-    "votingEndTime": "2021-09-18T19:40:08.712440474Z",
-    "title": "Test Proposal",
-    "summary": "testing, testing, 1, 2, 3"
+    "votingEndTime": "2021-09-18T19:40:08.712440474Z"
   }
 }
 ```
@@ -1344,9 +1336,7 @@ Example Output:
     ],
     "votingStartTime": "2022-03-28T14:25:26.644857113Z",
     "votingEndTime": "2022-03-30T14:25:26.644857113Z",
-    "metadata": "AQ==",
-    "title": "Test Proposal",
-    "summary": "testing, testing, 1, 2, 3"
+    "metadata": "AQ=="
   }
 }
 ```
@@ -1464,9 +1454,7 @@ Example Output:
       ],
       "votingStartTime": "2022-03-28T14:25:26.644857113Z",
       "votingEndTime": "2022-03-30T14:25:26.644857113Z",
-      "metadata": "AQ==",
-      "title": "Proposal Title",
-      "summary": "Proposal Summary"
+      "metadata": "AQ=="
     },
     {
       "id": "2",
@@ -1488,9 +1476,7 @@ Example Output:
           "amount": "10"
         }
       ],
-      "metadata": "AQ==",
-      "title": "Proposal Title",
-      "summary": "Proposal Summary"
+      "metadata": "AQ=="
     }
   ],
   "pagination": {
@@ -2013,9 +1999,7 @@ Example Output:
     ],
     "voting_start_time": "2022-03-28T14:25:26.644857113Z",
     "voting_end_time": "2022-03-30T14:25:26.644857113Z",
-    "metadata": "AQ==",
-    "title": "Proposal Title",
-    "summary": "Proposal Summary"
+    "metadata": "AQ=="
   }
 }
 ```
@@ -2140,9 +2124,7 @@ Example Output:
       ],
       "voting_start_time": "2022-03-28T14:25:26.644857113Z",
       "voting_end_time": "2022-03-30T14:25:26.644857113Z",
-      "metadata": "AQ==",
-      "title": "Proposal Title",
-      "summary": "Proposal Summary"
+      "metadata": "AQ=="
     },
     {
       "id": "2",
@@ -2176,9 +2158,7 @@ Example Output:
       ],
       "voting_start_time": null,
       "voting_end_time": null,
-      "metadata": "AQ==",
-      "title": "Proposal Title",
-      "summary": "Proposal Summary"
+      "metadata": "AQ=="
     }
   ],
   "pagination": {
@@ -2600,18 +2580,13 @@ Location: off-chain as json object stored on IPFS (mirrors [group proposal](../g
 ```json
 {
   "title": "",
-  "authors": [""],
+  "authors": "",
   "summary": "",
   "details": "",
   "proposal_forum_url": "",
   "vote_option_context": "",
 }
 ```
-
-:::note
-The `authors` field is an array of strings, this is to allow for multiple authors to be listed in the metadata.
-In v0.46, the `authors` field is a comma-separated string. Frontends are encouraged to support both formats for backwards compatibility.
-:::
 
 ### Vote
 

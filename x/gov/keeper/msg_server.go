@@ -41,13 +41,7 @@ func (k msgServer) SubmitProposal(goCtx context.Context, msg *v1.MsgSubmitPropos
 	if err != nil {
 		return nil, err
 	}
-
-	proposer, err := sdk.AccAddressFromBech32(msg.GetProposer())
-	if err != nil {
-		return nil, err
-	}
-
-	proposal, err := k.Keeper.SubmitProposal(ctx, proposalMsgs, msg.Metadata, msg.Title, msg.Summary, proposer)
+	proposal, err := k.Keeper.SubmitProposal(ctx, proposalMsgs, msg.Metadata)
 	if err != nil {
 		return nil, err
 	}
@@ -65,6 +59,7 @@ func (k msgServer) SubmitProposal(goCtx context.Context, msg *v1.MsgSubmitPropos
 
 	defer telemetry.IncrCounter(1, govtypes.ModuleName, "proposal")
 
+	proposer, _ := sdk.AccAddressFromBech32(msg.GetProposer())
 	votingStarted, err := k.Keeper.AddDeposit(ctx, proposal.Id, proposer, msg.GetInitialDeposit())
 	if err != nil {
 		return nil, err
@@ -226,8 +221,6 @@ func (k legacyMsgServer) SubmitProposal(goCtx context.Context, msg *v1beta1.MsgS
 		msg.InitialDeposit,
 		msg.Proposer,
 		"",
-		msg.GetContent().GetTitle(),
-		msg.GetContent().GetDescription(),
 	)
 	if err != nil {
 		return nil, err

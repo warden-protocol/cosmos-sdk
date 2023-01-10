@@ -310,7 +310,6 @@ func (s *E2ETestSuite) TestCLISignBatch() {
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.network.WaitForNextBlock())
-	s.Require().NoError(s.network.WaitForNextBlock())
 
 	// fetch the sequence after a tx, should be incremented.
 	_, seq1, err := val.ClientCtx.AccountRetriever.GetAccountNumberSequence(val.ClientCtx, val.Address)
@@ -397,7 +396,7 @@ func (s *E2ETestSuite) TestCLISignAminoJSON() {
 	// query account info
 	queryResJSON, err := authclitestutil.QueryAccountExec(val1.ClientCtx, val1.Address)
 	require.NoError(err)
-	var account sdk.AccountI
+	var account authtypes.AccountI
 	require.NoError(val1.ClientCtx.Codec.UnmarshalInterfaceJSON(queryResJSON.Bytes(), &account))
 
 	/****  test signature-only  ****/
@@ -1327,7 +1326,7 @@ func (s *E2ETestSuite) TestMultisignBatch() {
 
 	queryResJSON, err := authclitestutil.QueryAccountExec(val.ClientCtx, addr)
 	s.Require().NoError(err)
-	var account sdk.AccountI
+	var account authtypes.AccountI
 	s.Require().NoError(val.ClientCtx.Codec.UnmarshalInterfaceJSON(queryResJSON.Bytes(), &account))
 
 	// sign-batch file
@@ -1398,7 +1397,7 @@ func (s *E2ETestSuite) TestGetAccountCmd() {
 				s.Require().Error(err)
 				s.Require().NotEqual("internal", err.Error())
 			} else {
-				var acc sdk.AccountI
+				var acc authtypes.AccountI
 				s.Require().NoError(val.ClientCtx.Codec.UnmarshalInterfaceJSON(out.Bytes(), &acc))
 				s.Require().Equal(val.Address, acc.GetAddress())
 			}
@@ -1456,11 +1455,11 @@ func (s *E2ETestSuite) TestQueryModuleAccountByNameCmd() {
 				var res authtypes.QueryModuleAccountByNameResponse
 				s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &res))
 
-				var account sdk.AccountI
+				var account authtypes.AccountI
 				err := val.ClientCtx.InterfaceRegistry.UnpackAny(res.Account, &account)
 				s.Require().NoError(err)
 
-				moduleAccount, ok := account.(sdk.ModuleAccountI)
+				moduleAccount, ok := account.(authtypes.ModuleAccountI)
 				s.Require().True(ok)
 				s.Require().Equal(tc.moduleName, moduleAccount.GetName())
 			}

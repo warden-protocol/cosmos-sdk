@@ -3,12 +3,11 @@ package keeper_test
 import (
 	"testing"
 
-	"cosmossdk.io/simapp"
+	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	"gotest.tools/v3/assert"
 
+	"cosmossdk.io/simapp"
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -17,12 +16,14 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
-// fixture only tests gov's keeper logic around tallying, since it
+// KeeperTestSuite only tests gov's keeper logic around tallying, since it
 // relies on complex interactions with x/staking.
 //
 // It also uses simapp (and not a depinjected app) because we manually set a
 // new app.StakingKeeper in `createValidators`.
-type fixture struct {
+type KeeperTestSuite struct {
+	suite.Suite
+
 	app               *simapp.SimApp
 	ctx               sdk.Context
 	queryClient       v1.QueryClient
@@ -32,22 +33,17 @@ type fixture struct {
 	legacyMsgSrvr     v1beta1.MsgServer
 }
 
-// initFixture uses simapp (and not a depinjected app) because we manually set a
-// new app.StakingKeeper in `createValidators` which is used in most of the
-// gov keeper tests.
-func initFixture(t *testing.T) *fixture {
-	f := &fixture{}
-
-	app := simapp.Setup(t, false)
+func (suite *KeeperTestSuite) SetupTest() {
+	app := simapp.Setup(suite.T(), false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	// Populate the gov account with some coins, as the TestProposal we have
 	// is a MsgSend from the gov account.
 	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100000)))
 	err := app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, coins)
-	assert.NilError(t, err)
+	suite.NoError(err)
 	err = app.BankKeeper.SendCoinsFromModuleToModule(ctx, minttypes.ModuleName, types.ModuleName, coins)
-	assert.NilError(t, err)
+	suite.NoError(err)
 
 	queryHelper := baseapp.NewQueryServerTestHelper(ctx, app.InterfaceRegistry())
 	v1.RegisterQueryServer(queryHelper, app.GovKeeper)
@@ -56,15 +52,17 @@ func initFixture(t *testing.T) *fixture {
 	queryClient := v1.NewQueryClient(queryHelper)
 	legacyQueryClient := v1beta1.NewQueryClient(legacyQueryHelper)
 
-	f.app = app
-	f.ctx = ctx
-	f.queryClient = queryClient
-	f.legacyQueryClient = legacyQueryClient
-	f.msgSrvr = keeper.NewMsgServerImpl(f.app.GovKeeper)
+	suite.app = app
+	suite.ctx = ctx
+	suite.queryClient = queryClient
+	suite.legacyQueryClient = legacyQueryClient
+	suite.msgSrvr = keeper.NewMsgServerImpl(suite.app.GovKeeper)
 
-	govAcct := f.app.GovKeeper.GetGovernanceAccount(f.ctx).GetAddress()
-	f.legacyMsgSrvr = keeper.NewLegacyMsgServerImpl(govAcct.String(), f.msgSrvr)
-	f.addrs = simtestutil.AddTestAddrsIncremental(app.BankKeeper, app.StakingKeeper, ctx, 2, sdk.NewInt(30000000))
+	govAcct := suite.app.GovKeeper.GetGovernanceAccount(suite.ctx).GetAddress()
+	suite.legacyMsgSrvr = keeper.NewLegacyMsgServerImpl(govAcct.String(), suite.msgSrvr)
+	suite.addrs = simapp.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(30000000))
+}
 
-	return f
+func TestKeeperTestSuite(t *testing.T) {
+	suite.Run(t, new(KeeperTestSuite))
 }

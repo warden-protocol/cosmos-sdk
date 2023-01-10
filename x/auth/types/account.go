@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/tendermint/tendermint/crypto"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -15,11 +16,11 @@ import (
 )
 
 var (
-	_ sdk.AccountI                       = (*BaseAccount)(nil)
+	_ AccountI                           = (*BaseAccount)(nil)
 	_ GenesisAccount                     = (*BaseAccount)(nil)
 	_ codectypes.UnpackInterfacesMessage = (*BaseAccount)(nil)
 	_ GenesisAccount                     = (*ModuleAccount)(nil)
-	_ sdk.ModuleAccountI                 = (*ModuleAccount)(nil)
+	_ ModuleAccountI                     = (*ModuleAccount)(nil)
 )
 
 // NewBaseAccount creates a new BaseAccount object
@@ -41,7 +42,7 @@ func NewBaseAccount(address sdk.AccAddress, pubKey cryptotypes.PubKey, accountNu
 }
 
 // ProtoBaseAccount - a prototype function for BaseAccount
-func ProtoBaseAccount() sdk.AccountI {
+func ProtoBaseAccount() AccountI {
 	return &BaseAccount{}
 }
 
@@ -272,18 +273,33 @@ func (ma *ModuleAccount) UnmarshalJSON(bz []byte) error {
 // and a pubkey for authentication purposes.
 //
 // Many complex conditions can be used in the concrete struct which implements AccountI.
-//
-// Deprecated: Use `AccountI` from types package instead.
 type AccountI interface {
-	sdk.AccountI
+	proto.Message
+
+	GetAddress() sdk.AccAddress
+	SetAddress(sdk.AccAddress) error // errors if already set.
+
+	GetPubKey() cryptotypes.PubKey // can return nil.
+	SetPubKey(cryptotypes.PubKey) error
+
+	GetAccountNumber() uint64
+	SetAccountNumber(uint64) error
+
+	GetSequence() uint64
+	SetSequence(uint64) error
+
+	// Ensure that account implements stringer
+	String() string
 }
 
 // ModuleAccountI defines an account interface for modules that hold tokens in
 // an escrow.
-//
-// Deprecated: Use `ModuleAccountI` from types package instead.
 type ModuleAccountI interface {
-	sdk.ModuleAccountI
+	AccountI
+
+	GetName() string
+	GetPermissions() []string
+	HasPermission(string) bool
 }
 
 // GenesisAccounts defines a slice of GenesisAccount objects
@@ -303,7 +319,7 @@ func (ga GenesisAccounts) Contains(addr sdk.Address) bool {
 
 // GenesisAccount defines a genesis account that embeds an AccountI with validation capabilities.
 type GenesisAccount interface {
-	sdk.AccountI
+	AccountI
 
 	Validate() error
 }

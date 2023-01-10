@@ -5,13 +5,12 @@ import (
 	"testing"
 
 	"cosmossdk.io/simapp"
-	dbm "github.com/cosmos/cosmos-db"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	"gotest.tools/v3/assert"
-
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	dbm "github.com/tendermint/tm-db"
 )
 
 func TestRollback(t *testing.T) {
@@ -37,19 +36,19 @@ func TestRollback(t *testing.T) {
 		app.Commit()
 	}
 
-	assert.Equal(t, ver0+10, app.LastBlockHeight())
+	require.Equal(t, ver0+10, app.LastBlockHeight())
 	store := app.NewContext(true, tmproto.Header{}).KVStore(app.GetKey("bank"))
-	assert.DeepEqual(t, []byte("value10"), store.Get([]byte("key")))
+	require.Equal(t, []byte("value10"), store.Get([]byte("key")))
 
 	// rollback 5 blocks
 	target := ver0 + 5
-	assert.NilError(t, app.CommitMultiStore().RollbackToVersion(target))
-	assert.Equal(t, target, app.LastBlockHeight())
+	require.NoError(t, app.CommitMultiStore().RollbackToVersion(target))
+	require.Equal(t, target, app.LastBlockHeight())
 
 	// recreate app to have clean check state
 	app = simapp.NewSimApp(options.Logger, options.DB, nil, true, simtestutil.NewAppOptionsWithFlagHome(t.TempDir()))
 	store = app.NewContext(true, tmproto.Header{}).KVStore(app.GetKey("bank"))
-	assert.DeepEqual(t, []byte("value5"), store.Get([]byte("key")))
+	require.Equal(t, []byte("value5"), store.Get([]byte("key")))
 
 	// commit another 5 blocks with different values
 	for i := int64(6); i <= 10; i++ {
@@ -64,7 +63,7 @@ func TestRollback(t *testing.T) {
 		app.Commit()
 	}
 
-	assert.Equal(t, ver0+10, app.LastBlockHeight())
+	require.Equal(t, ver0+10, app.LastBlockHeight())
 	store = app.NewContext(true, tmproto.Header{}).KVStore(app.GetKey("bank"))
-	assert.DeepEqual(t, []byte("VALUE10"), store.Get([]byte("key")))
+	require.Equal(t, []byte("VALUE10"), store.Get([]byte("key")))
 }

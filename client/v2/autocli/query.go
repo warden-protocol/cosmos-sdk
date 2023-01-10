@@ -19,42 +19,9 @@ import (
 func (b *Builder) BuildQueryCommand(moduleOptions map[string]*autocliv1.ModuleOptions, customCmds map[string]*cobra.Command) (*cobra.Command, error) {
 	queryCmd := topLevelCmd("query", "Querying subcommands")
 	queryCmd.Aliases = []string{"q"}
-	if err := b.EnhanceQueryCommand(queryCmd, moduleOptions, customCmds); err != nil {
-		return nil, err
-	}
-
-	return queryCmd, nil
-}
-
-// EnhanceQueryCommand enhances the provided query command with either generated commands based on the provided module
-// options or the provided custom commands for each module. If the provided query command already contains a command
-// for a module, that command is not over-written by this method. This allows a graceful addition of autocli to
-// automatically fill in missing commands.
-func (b *Builder) EnhanceQueryCommand(queryCmd *cobra.Command, moduleOptions map[string]*autocliv1.ModuleOptions, customCmds map[string]*cobra.Command) error {
-	allModuleNames := map[string]bool{}
-	for moduleName := range moduleOptions {
-		allModuleNames[moduleName] = true
-	}
-	for moduleName := range customCmds {
-		allModuleNames[moduleName] = true
-	}
-
-	for moduleName := range allModuleNames {
-		// if we have an existing command skip adding one here
-		if existing := findSubCommand(queryCmd, moduleName); existing != nil {
-			continue
-		}
-
-		// if we have a custom command use that instead of generating one
-		if custom := customCmds[moduleName]; custom != nil {
+	for moduleName, modOpts := range moduleOptions {
+		if customCmds[moduleName] != nil {
 			// custom commands get added lower down
-			queryCmd.AddCommand(custom)
-			continue
-		}
-
-		// check for autocli options
-		modOpts := moduleOptions[moduleName]
-		if modOpts == nil {
 			continue
 		}
 
@@ -62,14 +29,18 @@ func (b *Builder) EnhanceQueryCommand(queryCmd *cobra.Command, moduleOptions map
 		if queryCmdDesc != nil {
 			cmd, err := b.BuildModuleQueryCommand(moduleName, queryCmdDesc)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			queryCmd.AddCommand(cmd)
 		}
 	}
 
-	return nil
+	for _, cmd := range customCmds {
+		queryCmd.AddCommand(cmd)
+	}
+
+	return queryCmd, nil
 }
 
 // BuildModuleQueryCommand builds the query command for a single module.
@@ -103,7 +74,7 @@ func (b *Builder) AddQueryServiceCommands(cmd *cobra.Command, cmdDescriptor *aut
 		rpcOptMap[name] = option
 		// make sure method exists
 		if m := methods.ByName(name); m == nil {
-			return fmt.Errorf("rpc method %q not found for service %q", name, service.FullName())
+			return fmt.Errorf("rpc method %s not found for service %s", name, service.FullName())
 		}
 	}
 
@@ -192,18 +163,14 @@ func (b *Builder) BuildQueryMethodCommand(descriptor protoreflect.MethodDescript
 	}
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		clientConn, err := getClientConn(cmd)
-		if err != nil {
-			return err
-		}
-
+		ctx := cmd.Context()
+		clientConn := getClientConn(ctx)
 		input, err := binder.BuildMessage(args)
 		if err != nil {
 			return err
 		}
 
 		output := outputType.New()
-		ctx := cmd.Context()
 		err = clientConn.Invoke(ctx, methodName, input.Interface(), output.Interface())
 		if err != nil {
 			return err
@@ -216,10 +183,6 @@ func (b *Builder) BuildQueryMethodCommand(descriptor protoreflect.MethodDescript
 
 		_, err = fmt.Fprintln(cmd.OutOrStdout(), string(bz))
 		return err
-	}
-
-	if b.AddQueryConnFlags != nil {
-		b.AddQueryConnFlags(cmd)
 	}
 
 	return cmd, nil

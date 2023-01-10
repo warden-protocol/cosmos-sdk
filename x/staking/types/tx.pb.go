@@ -540,7 +540,7 @@ var xxx_messageInfo_MsgCancelUnbondingDelegationResponse proto.InternalMessageIn
 //
 // Since: cosmos-sdk 0.47
 type MsgUpdateParams struct {
-	// authority is the address that controls the module (defaults to x/gov unless overwritten).
+	// authority is the address of the governance account.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
 	// params defines the x/staking parameters to update.
 	//

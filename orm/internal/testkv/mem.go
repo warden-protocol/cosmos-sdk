@@ -1,7 +1,7 @@
 package testkv
 
 import (
-	dbm "github.com/cosmos/cosmos-db"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/orm/model/ormtable"
 )

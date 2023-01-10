@@ -35,7 +35,6 @@ func RegisterLegacyAminoCodec(cdc *codectypes.LegacyAmino) {
 	legacy.RegisterAminoMsg(cdc, &MsgLeaveGroup{}, "cosmos-sdk/group/MsgLeaveGroup")
 }
 
-// RegisterInterfaces registers the interfaces types with the interface registry.
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgCreateGroup{},

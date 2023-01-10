@@ -15,6 +15,7 @@ var (
 	valConsPk2 = PKS[2]
 
 	valConsAddr0 = sdk.ConsAddress(valConsPk0.Address())
+	valConsAddr1 = sdk.ConsAddress(valConsPk1.Address())
 
 	distrAcc = authtypes.NewEmptyModuleAccount(types.ModuleName)
 )

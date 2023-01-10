@@ -18,9 +18,7 @@ func Test_ParseCLIProposal(t *testing.T) {
 			  }
 			],
 			"metadata": "4pIMOgIGx1vZGU=",
-			"proposers": ["cosmos15r295x4994egvckteam9skazy9kvfvzpak4naf"],
-			"title": "test",
-			"summary": "test summary"
+			"proposers": ["cosmos15r295x4994egvckteam9skazy9kvfvzpak4naf"]
 		}`)
 
 	result, err := parseCLIProposal(data)
@@ -29,6 +27,4 @@ func Test_ParseCLIProposal(t *testing.T) {
 	require.NotEmpty(t, result.Metadata)
 	require.Equal(t, result.Metadata, "4pIMOgIGx1vZGU=")
 	require.Equal(t, result.Proposers, []string{"cosmos15r295x4994egvckteam9skazy9kvfvzpak4naf"})
-	require.Equal(t, result.Title, "test")
-	require.Equal(t, result.Summary, "test summary")
 }

@@ -222,8 +222,6 @@ func convertToNewProposal(oldProp v1beta1.Proposal) (v1.Proposal, error) {
 		TotalDeposit:    oldProp.TotalDeposit,
 		VotingStartTime: &oldProp.VotingStartTime,
 		VotingEndTime:   &oldProp.VotingEndTime,
-		Title:           oldProp.GetContent().GetTitle(),
-		Summary:         oldProp.GetContent().GetDescription(),
 	}, nil
 }
 

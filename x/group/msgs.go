@@ -82,7 +82,7 @@ func (m MsgUpdateGroupAdmin) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{admin}
 }
 
-// ValidateBasic does a sanity check on the provided data.
+// ValidateBasic does a sanity check on the provided data
 func (m MsgUpdateGroupAdmin) ValidateBasic() error {
 	if m.GroupId == 0 {
 		return sdkerrors.Wrap(errors.ErrEmpty, "group id")
@@ -104,7 +104,6 @@ func (m MsgUpdateGroupAdmin) ValidateBasic() error {
 	return nil
 }
 
-// GetGroupID gets the group id of the MsgUpdateGroupAdmin.
 func (m *MsgUpdateGroupAdmin) GetGroupID() uint64 {
 	return m.GroupId
 }
@@ -144,7 +143,6 @@ func (m MsgUpdateGroupMetadata) ValidateBasic() error {
 	return nil
 }
 
-// GetGroupID gets the group id of the MsgUpdateGroupMetadata.
 func (m *MsgUpdateGroupMetadata) GetGroupID() uint64 {
 	return m.GroupId
 }
@@ -193,7 +191,6 @@ func (m MsgUpdateGroupMembers) ValidateBasic() error {
 	return nil
 }
 
-// GetGroupID gets the group id of the MsgUpdateGroupMembers.
 func (m *MsgUpdateGroupMembers) GetGroupID() uint64 {
 	return m.GroupId
 }
@@ -219,7 +216,6 @@ func NewMsgCreateGroupWithPolicy(admin string, members []MemberRequest, groupMet
 	return m, nil
 }
 
-// GetDecisionPolicy gets the decision policy of MsgCreateGroupWithPolicy.
 func (m *MsgCreateGroupWithPolicy) GetDecisionPolicy() (DecisionPolicy, error) {
 	decisionPolicy, ok := m.DecisionPolicy.GetCachedValue().(DecisionPolicy)
 	if !ok {
@@ -228,7 +224,6 @@ func (m *MsgCreateGroupWithPolicy) GetDecisionPolicy() (DecisionPolicy, error) {
 	return decisionPolicy, nil
 }
 
-// SetDecisionPolicy sets the decision policy for MsgCreateGroupWithPolicy.
 func (m *MsgCreateGroupWithPolicy) SetDecisionPolicy(decisionPolicy DecisionPolicy) error {
 	any, err := types.NewAnyWithValue(decisionPolicy)
 	if err != nil {
@@ -387,7 +382,6 @@ func NewMsgUpdateGroupPolicyDecisionPolicy(admin sdk.AccAddress, address sdk.Acc
 	return m, nil
 }
 
-// SetDecisionPolicy sets the decision policy for MsgUpdateGroupPolicyDecisionPolicy.
 func (m *MsgUpdateGroupPolicyDecisionPolicy) SetDecisionPolicy(decisionPolicy DecisionPolicy) error {
 	msg, ok := decisionPolicy.(proto.Message)
 	if !ok {
@@ -447,7 +441,6 @@ func (m MsgUpdateGroupPolicyDecisionPolicy) ValidateBasic() error {
 	return nil
 }
 
-// GetDecisionPolicy gets the decision policy of MsgUpdateGroupPolicyDecisionPolicy.
 func (m *MsgUpdateGroupPolicyDecisionPolicy) GetDecisionPolicy() (DecisionPolicy, error) {
 	decisionPolicy, ok := m.DecisionPolicy.GetCachedValue().(DecisionPolicy)
 	if !ok {
@@ -519,22 +512,18 @@ func NewMsgCreateGroupPolicy(admin sdk.AccAddress, group uint64, metadata string
 	return m, nil
 }
 
-// GetAdmin gets the admin of MsgCreateGroupPolicy.
 func (m *MsgCreateGroupPolicy) GetAdmin() string {
 	return m.Admin
 }
 
-// GetGroupID gets the group id of MsgCreateGroupPolicy.
 func (m *MsgCreateGroupPolicy) GetGroupID() uint64 {
 	return m.GroupId
 }
 
-// GetMetadata gets the metadata of MsgCreateGroupPolicy.
 func (m *MsgCreateGroupPolicy) GetMetadata() string {
 	return m.Metadata
 }
 
-// GetDecisionPolicy gets the decision policy of MsgCreateGroupPolicy.
 func (m *MsgCreateGroupPolicy) GetDecisionPolicy() (DecisionPolicy, error) {
 	decisionPolicy, ok := m.DecisionPolicy.GetCachedValue().(DecisionPolicy)
 	if !ok {
@@ -543,7 +532,6 @@ func (m *MsgCreateGroupPolicy) GetDecisionPolicy() (DecisionPolicy, error) {
 	return decisionPolicy, nil
 }
 
-// SetDecisionPolicy sets the decision policy of MsgCreateGroupPolicy.
 func (m *MsgCreateGroupPolicy) SetDecisionPolicy(decisionPolicy DecisionPolicy) error {
 	any, err := types.NewAnyWithValue(decisionPolicy)
 	if err != nil {
@@ -562,14 +550,12 @@ func (m MsgCreateGroupPolicy) UnpackInterfaces(unpacker types.AnyUnpacker) error
 var _ sdk.Msg = &MsgSubmitProposal{}
 
 // NewMsgSubmitProposal creates a new MsgSubmitProposal.
-func NewMsgSubmitProposal(address string, proposers []string, msgs []sdk.Msg, metadata string, exec Exec, title, summary string) (*MsgSubmitProposal, error) {
+func NewMsgSubmitProposal(address string, proposers []string, msgs []sdk.Msg, metadata string, exec Exec) (*MsgSubmitProposal, error) {
 	m := &MsgSubmitProposal{
 		GroupPolicyAddress: address,
 		Proposers:          proposers,
 		Metadata:           metadata,
 		Exec:               exec,
-		Title:              title,
-		Summary:            summary,
 	}
 	err := m.SetMsgs(msgs)
 	if err != nil {
@@ -608,14 +594,6 @@ func (m MsgSubmitProposal) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(m.GroupPolicyAddress)
 	if err != nil {
 		return sdkerrors.Wrap(err, "group policy")
-	}
-
-	if m.Title == "" {
-		return sdkerrors.Wrap(errors.ErrEmpty, "title")
-	}
-
-	if m.Summary == "" {
-		return sdkerrors.Wrap(errors.ErrEmpty, "summary")
 	}
 
 	if len(m.Proposers) == 0 {

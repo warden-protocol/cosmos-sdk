@@ -15,11 +15,11 @@ import (
 	"testing"
 	"time"
 
-	dbm "github.com/cosmos/cosmos-db"
 	"github.com/spf13/cobra"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/node"
 	tmclient "github.com/tendermint/tendermint/rpc/client"
+	dbm "github.com/tendermint/tm-db"
 	"google.golang.org/grpc"
 
 	"cosmossdk.io/math"
@@ -142,8 +142,7 @@ func MinimumAppConfig() depinject.Config {
 		configurator.GenutilModule(),
 		configurator.StakingModule(),
 		configurator.ConsensusModule(),
-		configurator.TxModule(),
-	)
+		configurator.TxModule())
 }
 
 func DefaultConfigWithAppConfig(appConfig depinject.Config) (Config, error) {
@@ -342,7 +341,7 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 				apiListenAddr = cfg.APIAddress
 			} else {
 				var err error
-				apiListenAddr, _, err = FreeTCPAddr()
+				apiListenAddr, _, err = server.FreeTCPAddr()
 				if err != nil {
 					return nil, err
 				}
@@ -358,7 +357,7 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 			if cfg.RPCAddress != "" {
 				tmCfg.RPC.ListenAddress = cfg.RPCAddress
 			} else {
-				rpcAddr, _, err := FreeTCPAddr()
+				rpcAddr, _, err := server.FreeTCPAddr()
 				if err != nil {
 					return nil, err
 				}
@@ -368,7 +367,7 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 			if cfg.GRPCAddress != "" {
 				appCfg.GRPC.Address = cfg.GRPCAddress
 			} else {
-				_, grpcPort, err := FreeTCPAddr()
+				_, grpcPort, err := server.FreeTCPAddr()
 				if err != nil {
 					return nil, err
 				}
@@ -376,7 +375,7 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 			}
 			appCfg.GRPC.Enable = true
 
-			_, grpcWebPort, err := FreeTCPAddr()
+			_, grpcWebPort, err := server.FreeTCPAddr()
 			if err != nil {
 				return nil, err
 			}
@@ -410,13 +409,13 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 		tmCfg.Moniker = nodeDirName
 		monikers[i] = nodeDirName
 
-		proxyAddr, _, err := FreeTCPAddr()
+		proxyAddr, _, err := server.FreeTCPAddr()
 		if err != nil {
 			return nil, err
 		}
 		tmCfg.ProxyApp = proxyAddr
 
-		p2pAddr, _, err := FreeTCPAddr()
+		p2pAddr, _, err := server.FreeTCPAddr()
 		if err != nil {
 			return nil, err
 		}

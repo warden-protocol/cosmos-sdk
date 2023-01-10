@@ -9,7 +9,8 @@ import (
 
 	math "cosmossdk.io/math"
 	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/cosmos-sdk/x/staking/types"
+	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
+	types1 "github.com/cosmos/cosmos-sdk/x/staking/types"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -88,10 +89,10 @@ func (m *MockAccountKeeper) EXPECT() *MockAccountKeeperMockRecorder {
 }
 
 // GetAccount mocks base method.
-func (m *MockAccountKeeper) GetAccount(ctx types.Context, addr types.AccAddress) types.AccountI {
+func (m *MockAccountKeeper) GetAccount(ctx types.Context, addr types.AccAddress) types0.AccountI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccount", ctx, addr)
-	ret0, _ := ret[0].(types.AccountI)
+	ret0, _ := ret[0].(types0.AccountI)
 	return ret0
 }
 
@@ -102,10 +103,10 @@ func (mr *MockAccountKeeperMockRecorder) GetAccount(ctx, addr interface{}) *gomo
 }
 
 // GetModuleAccount mocks base method.
-func (m *MockAccountKeeper) GetModuleAccount(ctx types.Context, moduleName string) types.ModuleAccountI {
+func (m *MockAccountKeeper) GetModuleAccount(ctx types.Context, moduleName string) types0.ModuleAccountI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetModuleAccount", ctx, moduleName)
-	ret0, _ := ret[0].(types.ModuleAccountI)
+	ret0, _ := ret[0].(types0.ModuleAccountI)
 	return ret0
 }
 
@@ -130,7 +131,7 @@ func (mr *MockAccountKeeperMockRecorder) GetModuleAddress(name interface{}) *gom
 }
 
 // IterateAccounts mocks base method.
-func (m *MockAccountKeeper) IterateAccounts(ctx types.Context, process func(types.AccountI) bool) {
+func (m *MockAccountKeeper) IterateAccounts(ctx types.Context, process func(types0.AccountI) bool) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "IterateAccounts", ctx, process)
 }
@@ -142,7 +143,7 @@ func (mr *MockAccountKeeperMockRecorder) IterateAccounts(ctx, process interface{
 }
 
 // SetModuleAccount mocks base method.
-func (m *MockAccountKeeper) SetModuleAccount(arg0 types.Context, arg1 types.ModuleAccountI) {
+func (m *MockAccountKeeper) SetModuleAccount(arg0 types.Context, arg1 types0.ModuleAccountI) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetModuleAccount", arg0, arg1)
 }
@@ -326,10 +327,10 @@ func (m *MockValidatorSet) EXPECT() *MockValidatorSetMockRecorder {
 }
 
 // Delegation mocks base method.
-func (m *MockValidatorSet) Delegation(arg0 types.Context, arg1 types.AccAddress, arg2 types.ValAddress) types0.DelegationI {
+func (m *MockValidatorSet) Delegation(arg0 types.Context, arg1 types.AccAddress, arg2 types.ValAddress) types1.DelegationI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delegation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(types0.DelegationI)
+	ret0, _ := ret[0].(types1.DelegationI)
 	return ret0
 }
 
@@ -340,7 +341,7 @@ func (mr *MockValidatorSetMockRecorder) Delegation(arg0, arg1, arg2 interface{})
 }
 
 // IterateBondedValidatorsByPower mocks base method.
-func (m *MockValidatorSet) IterateBondedValidatorsByPower(arg0 types.Context, arg1 func(int64, types0.ValidatorI) bool) {
+func (m *MockValidatorSet) IterateBondedValidatorsByPower(arg0 types.Context, arg1 func(int64, types1.ValidatorI) bool) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "IterateBondedValidatorsByPower", arg0, arg1)
 }
@@ -352,7 +353,7 @@ func (mr *MockValidatorSetMockRecorder) IterateBondedValidatorsByPower(arg0, arg
 }
 
 // IterateLastValidators mocks base method.
-func (m *MockValidatorSet) IterateLastValidators(arg0 types.Context, arg1 func(int64, types0.ValidatorI) bool) {
+func (m *MockValidatorSet) IterateLastValidators(arg0 types.Context, arg1 func(int64, types1.ValidatorI) bool) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "IterateLastValidators", arg0, arg1)
 }
@@ -364,7 +365,7 @@ func (mr *MockValidatorSetMockRecorder) IterateLastValidators(arg0, arg1 interfa
 }
 
 // IterateValidators mocks base method.
-func (m *MockValidatorSet) IterateValidators(arg0 types.Context, arg1 func(int64, types0.ValidatorI) bool) {
+func (m *MockValidatorSet) IterateValidators(arg0 types.Context, arg1 func(int64, types1.ValidatorI) bool) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "IterateValidators", arg0, arg1)
 }
@@ -416,7 +417,7 @@ func (mr *MockValidatorSetMockRecorder) Slash(arg0, arg1, arg2, arg3, arg4 inter
 }
 
 // SlashWithInfractionReason mocks base method.
-func (m *MockValidatorSet) SlashWithInfractionReason(arg0 types.Context, arg1 types.ConsAddress, arg2, arg3 int64, arg4 types.Dec, arg5 types0.Infraction) math.Int {
+func (m *MockValidatorSet) SlashWithInfractionReason(arg0 types.Context, arg1 types.ConsAddress, arg2, arg3 int64, arg4 types.Dec, arg5 types1.Infraction) math.Int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SlashWithInfractionReason", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(math.Int)
@@ -470,10 +471,10 @@ func (mr *MockValidatorSetMockRecorder) Unjail(arg0, arg1 interface{}) *gomock.C
 }
 
 // Validator mocks base method.
-func (m *MockValidatorSet) Validator(arg0 types.Context, arg1 types.ValAddress) types0.ValidatorI {
+func (m *MockValidatorSet) Validator(arg0 types.Context, arg1 types.ValAddress) types1.ValidatorI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Validator", arg0, arg1)
-	ret0, _ := ret[0].(types0.ValidatorI)
+	ret0, _ := ret[0].(types1.ValidatorI)
 	return ret0
 }
 
@@ -484,10 +485,10 @@ func (mr *MockValidatorSetMockRecorder) Validator(arg0, arg1 interface{}) *gomoc
 }
 
 // ValidatorByConsAddr mocks base method.
-func (m *MockValidatorSet) ValidatorByConsAddr(arg0 types.Context, arg1 types.ConsAddress) types0.ValidatorI {
+func (m *MockValidatorSet) ValidatorByConsAddr(arg0 types.Context, arg1 types.ConsAddress) types1.ValidatorI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidatorByConsAddr", arg0, arg1)
-	ret0, _ := ret[0].(types0.ValidatorI)
+	ret0, _ := ret[0].(types1.ValidatorI)
 	return ret0
 }
 
@@ -521,10 +522,10 @@ func (m *MockDelegationSet) EXPECT() *MockDelegationSetMockRecorder {
 }
 
 // GetValidatorSet mocks base method.
-func (m *MockDelegationSet) GetValidatorSet() types0.ValidatorSet {
+func (m *MockDelegationSet) GetValidatorSet() types1.ValidatorSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetValidatorSet")
-	ret0, _ := ret[0].(types0.ValidatorSet)
+	ret0, _ := ret[0].(types1.ValidatorSet)
 	return ret0
 }
 
@@ -535,7 +536,7 @@ func (mr *MockDelegationSetMockRecorder) GetValidatorSet() *gomock.Call {
 }
 
 // IterateDelegations mocks base method.
-func (m *MockDelegationSet) IterateDelegations(ctx types.Context, delegator types.AccAddress, fn func(int64, types0.DelegationI) bool) {
+func (m *MockDelegationSet) IterateDelegations(ctx types.Context, delegator types.AccAddress, fn func(int64, types1.DelegationI) bool) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "IterateDelegations", ctx, delegator, fn)
 }

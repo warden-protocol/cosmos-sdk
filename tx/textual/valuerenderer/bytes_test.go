@@ -37,23 +37,17 @@ func TestBytesJsonTestCases(t *testing.T) {
 
 		// Round trip
 		val, err := valrend.Parse(context.Background(), screens)
-		if err != nil {
-			// Make sure Parse() only errors because of hashed bytes.
-			require.Equal(t, "cannot parse bytes hash", err.Error())
-			require.Greater(t, len(tc.base64), 32)
-			continue
-		}
 		require.NoError(t, err)
 		require.Equal(t, tc.base64, base64.StdEncoding.EncodeToString(val.Bytes()))
 	}
 }
 
 type bytesTest struct {
-	base64 string
 	hex    string
+	base64 string
 }
 
 func (t *bytesTest) UnmarshalJSON(b []byte) error {
-	a := []interface{}{&t.base64, &t.hex}
+	a := []interface{}{&t.hex, &t.base64}
 	return json.Unmarshal(b, &a)
 }

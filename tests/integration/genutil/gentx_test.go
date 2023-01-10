@@ -7,12 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	"gotest.tools/v3/assert"
 
 	"cosmossdk.io/math"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/testutil/configurator"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -47,7 +45,10 @@ var (
 	comm  = stakingtypes.CommissionRates{}
 )
 
-type fixture struct {
+// GenTxTestSuite is a test suite to be used with gentx tests.
+type GenTxTestSuite struct {
+	suite.Suite
+
 	ctx sdk.Context
 
 	encodingConfig moduletestutil.TestEncodingConfig
@@ -58,8 +59,7 @@ type fixture struct {
 	baseApp        *baseapp.BaseApp
 }
 
-func initFixture(t assert.TestingT) *fixture {
-	f := &fixture{}
+func (suite *GenTxTestSuite) SetupTest() {
 	encCfg := moduletestutil.TestEncodingConfig{}
 
 	app, err := simtestutil.SetupWithConfiguration(
@@ -72,45 +72,40 @@ func initFixture(t assert.TestingT) *fixture {
 			configurator.AuthModule()),
 		simtestutil.DefaultStartUpConfig(),
 		&encCfg.InterfaceRegistry, &encCfg.Codec, &encCfg.TxConfig, &encCfg.Amino,
-		&f.accountKeeper, &f.bankKeeper, &f.stakingKeeper)
-	assert.NilError(t, err)
+		&suite.accountKeeper, &suite.bankKeeper, &suite.stakingKeeper)
+	suite.Require().NoError(err)
 
-	f.ctx = app.BaseApp.NewContext(false, tmproto.Header{})
-	f.encodingConfig = encCfg
-	f.baseApp = app.BaseApp
+	suite.ctx = app.BaseApp.NewContext(false, tmproto.Header{})
+	suite.encodingConfig = encCfg
+	suite.baseApp = app.BaseApp
 
 	amount := sdk.NewInt64Coin(sdk.DefaultBondDenom, 50)
 	one := math.OneInt()
-	f.msg1, err = stakingtypes.NewMsgCreateValidator(
+	suite.msg1, err = stakingtypes.NewMsgCreateValidator(
 		sdk.ValAddress(pk1.Address()), pk1, amount, desc, comm, one)
-	assert.NilError(t, err)
-	f.msg2, err = stakingtypes.NewMsgCreateValidator(
+	suite.NoError(err)
+	suite.msg2, err = stakingtypes.NewMsgCreateValidator(
 		sdk.ValAddress(pk2.Address()), pk1, amount, desc, comm, one)
-	assert.NilError(t, err)
-
-	return f
+	suite.NoError(err)
 }
 
-func setAccountBalance(t *testing.T, f *fixture, addr sdk.AccAddress, amount int64) json.RawMessage {
-	acc := f.accountKeeper.NewAccountWithAddress(f.ctx, addr)
-	f.accountKeeper.SetAccount(f.ctx, acc)
+func (suite *GenTxTestSuite) setAccountBalance(addr sdk.AccAddress, amount int64) json.RawMessage {
+	acc := suite.accountKeeper.NewAccountWithAddress(suite.ctx, addr)
+	suite.accountKeeper.SetAccount(suite.ctx, acc)
 
-	err := testutil.FundAccount(f.bankKeeper, f.ctx, addr, sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, amount)})
-	assert.NilError(t, err)
+	err := testutil.FundAccount(suite.bankKeeper, suite.ctx, addr, sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, amount)})
+	suite.Require().NoError(err)
 
-	bankGenesisState := f.bankKeeper.ExportGenesis(f.ctx)
-	bankGenesis, err := f.encodingConfig.Amino.MarshalJSON(bankGenesisState) // TODO switch this to use Marshaler
-	assert.NilError(t, err)
+	bankGenesisState := suite.bankKeeper.ExportGenesis(suite.ctx)
+	bankGenesis, err := suite.encodingConfig.Amino.MarshalJSON(bankGenesisState) // TODO switch this to use Marshaler
+	suite.Require().NoError(err)
 
 	return bankGenesis
 }
 
-func TestSetGenTxsInAppGenesisState(t *testing.T) {
-	t.Parallel()
-	f := initFixture(t)
-
+func (suite *GenTxTestSuite) TestSetGenTxsInAppGenesisState() {
 	var (
-		txBuilder = f.encodingConfig.TxConfig.NewTxBuilder()
+		txBuilder = suite.encodingConfig.TxConfig.NewTxBuilder()
 		genTxs    []sdk.Tx
 	)
 
@@ -122,8 +117,8 @@ func TestSetGenTxsInAppGenesisState(t *testing.T) {
 		{
 			"one genesis transaction",
 			func() {
-				err := txBuilder.SetMsgs(f.msg1)
-				assert.NilError(t, err)
+				err := txBuilder.SetMsgs(suite.msg1)
+				suite.Require().NoError(err)
 				tx := txBuilder.GetTx()
 				genTxs = []sdk.Tx{tx}
 			},
@@ -132,8 +127,8 @@ func TestSetGenTxsInAppGenesisState(t *testing.T) {
 		{
 			"two genesis transactions",
 			func() {
-				err := txBuilder.SetMsgs(f.msg1, f.msg2)
-				assert.NilError(t, err)
+				err := txBuilder.SetMsgs(suite.msg1, suite.msg2)
+				suite.Require().NoError(err)
 				tx := txBuilder.GetTx()
 				genTxs = []sdk.Tx{tx}
 			},
@@ -142,79 +137,82 @@ func TestSetGenTxsInAppGenesisState(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("Case %s", tc.msg), func(t *testing.T) {
-			initFixture(t)
-
-			cdc := f.encodingConfig.Codec
-			txJSONEncoder := f.encodingConfig.TxConfig.TxJSONEncoder()
+		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			suite.SetupTest()
+			cdc := suite.encodingConfig.Codec
+			txJSONEncoder := suite.encodingConfig.TxConfig.TxJSONEncoder()
 
 			tc.malleate()
 			appGenesisState, err := genutil.SetGenTxsInAppGenesisState(cdc, txJSONEncoder, make(map[string]json.RawMessage), genTxs)
 
-			assert.NilError(t, err)
-			assert.Assert(t, appGenesisState[types.ModuleName] != nil)
+			if tc.expPass {
+				suite.Require().NoError(err)
+				suite.Require().NotNil(appGenesisState[types.ModuleName])
 
-			var genesisState types.GenesisState
-			err = cdc.UnmarshalJSON(appGenesisState[types.ModuleName], &genesisState)
-			assert.NilError(t, err)
-			assert.Assert(t, genesisState.GenTxs != nil)
+				var genesisState types.GenesisState
+				err := cdc.UnmarshalJSON(appGenesisState[types.ModuleName], &genesisState)
+				suite.Require().NoError(err)
+				suite.Require().NotNil(genesisState.GenTxs)
+			} else {
+				suite.Require().Error(err)
+			}
 		})
 	}
 }
 
-func TestValidateAccountInGenesis(t *testing.T) {
-	t.Parallel()
-	f := initFixture(t)
-
+func (suite *GenTxTestSuite) TestValidateAccountInGenesis() {
 	var (
 		appGenesisState = make(map[string]json.RawMessage)
 		coins           sdk.Coins
 	)
 
 	testCases := []struct {
-		msg       string
-		malleate  func()
-		expPass   bool
-		expErrMsg string
+		msg      string
+		malleate func()
+		expPass  bool
 	}{
 		{
-			"account without balance in the genesis state",
+			"no accounts",
 			func() {
 				coins = sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)}
 			},
 			false,
-			fmt.Sprintf("account %s does not have a balance in the genesis state", addr1),
+		},
+		{
+			"account without balance in the genesis state",
+			func() {
+				coins = sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)}
+				appGenesisState[banktypes.ModuleName] = suite.setAccountBalance(addr2, 50)
+			},
+			false,
 		},
 		{
 			"account without enough funds of default bond denom",
 			func() {
 				coins = sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 50)}
-				appGenesisState[banktypes.ModuleName] = setAccountBalance(t, f, addr1, 25)
+				appGenesisState[banktypes.ModuleName] = suite.setAccountBalance(addr1, 25)
 			},
 			false,
-			fmt.Sprintf("account %s has a balance in genesis, but it only has 25stake available to stake, not 50stake", addr1),
 		},
 		{
 			"account with enough funds of default bond denom",
 			func() {
 				coins = sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 10)}
-				appGenesisState[banktypes.ModuleName] = setAccountBalance(t, f, addr1, 25)
+				appGenesisState[banktypes.ModuleName] = suite.setAccountBalance(addr1, 25)
 			},
 			true,
-			"",
 		},
 	}
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("Case %s", tc.msg), func(t *testing.T) {
-			initFixture(t)
+		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			suite.SetupTest()
+			cdc := suite.encodingConfig.Codec
 
-			cdc := f.encodingConfig.Codec
-
-			f.stakingKeeper.SetParams(f.ctx, stakingtypes.DefaultParams())
-			stakingGenesisState := f.stakingKeeper.ExportGenesis(f.ctx)
-			assert.DeepEqual(t, stakingGenesisState.Params, stakingtypes.DefaultParams())
+			suite.stakingKeeper.SetParams(suite.ctx, stakingtypes.DefaultParams())
+			stakingGenesisState := suite.stakingKeeper.ExportGenesis(suite.ctx)
+			suite.Require().Equal(stakingGenesisState.Params, stakingtypes.DefaultParams())
 			stakingGenesis, err := cdc.MarshalJSON(stakingGenesisState) // TODO switch this to use Marshaler
-			assert.NilError(t, err)
+			suite.Require().NoError(err)
 			appGenesisState[stakingtypes.ModuleName] = stakingGenesis
 
 			tc.malleate()
@@ -224,95 +222,93 @@ func TestValidateAccountInGenesis(t *testing.T) {
 			)
 
 			if tc.expPass {
-				assert.NilError(t, err)
+				suite.Require().NoError(err)
 			} else {
-				assert.ErrorContains(t, err, tc.expErrMsg)
+				suite.Require().Error(err)
 			}
 		})
 	}
 }
 
-func TestDeliverGenTxs(t *testing.T) {
-	t.Parallel()
-	f := initFixture(t)
-
+func (suite *GenTxTestSuite) TestDeliverGenTxs() {
 	var (
 		genTxs    []json.RawMessage
-		txBuilder = f.encodingConfig.TxConfig.NewTxBuilder()
+		txBuilder = suite.encodingConfig.TxConfig.NewTxBuilder()
 	)
 
 	testCases := []struct {
-		msg       string
-		malleate  func()
-		expPass   bool
-		expErrMsg string
+		msg      string
+		malleate func()
+		expPass  bool
 	}{
 		{
 			"no signature supplied",
 			func() {
-				err := txBuilder.SetMsgs(f.msg1)
-				assert.NilError(t, err)
+				err := txBuilder.SetMsgs(suite.msg1)
+				suite.Require().NoError(err)
 
 				genTxs = make([]json.RawMessage, 1)
-				tx, err := f.encodingConfig.TxConfig.TxJSONEncoder()(txBuilder.GetTx())
-				assert.NilError(t, err)
+				tx, err := suite.encodingConfig.TxConfig.TxJSONEncoder()(txBuilder.GetTx())
+				suite.Require().NoError(err)
 				genTxs[0] = tx
 			},
 			false,
-			"no signatures supplied",
 		},
 		{
 			"success",
 			func() {
-				_ = setAccountBalance(t, f, addr1, 50)
-				_ = setAccountBalance(t, f, addr2, 1)
+				_ = suite.setAccountBalance(addr1, 50)
+				_ = suite.setAccountBalance(addr2, 1)
 
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				msg := banktypes.NewMsgSend(addr1, addr2, sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 1)})
 				tx, err := simtestutil.GenSignedMockTx(
 					r,
-					f.encodingConfig.TxConfig,
+					suite.encodingConfig.TxConfig,
 					[]sdk.Msg{msg},
 					sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 10)},
 					simtestutil.DefaultGenTxGas,
-					f.ctx.ChainID(),
+					suite.ctx.ChainID(),
 					[]uint64{7},
 					[]uint64{0},
 					priv1,
 				)
-				assert.NilError(t, err)
+				suite.Require().NoError(err)
 
 				genTxs = make([]json.RawMessage, 1)
-				genTx, err := f.encodingConfig.TxConfig.TxJSONEncoder()(tx)
-				assert.NilError(t, err)
+				genTx, err := suite.encodingConfig.TxConfig.TxJSONEncoder()(tx)
+				suite.Require().NoError(err)
 				genTxs[0] = genTx
 			},
 			true,
-			"",
 		},
 	}
 
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("Case %s", tc.msg), func(t *testing.T) {
-			initFixture(t)
+		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			suite.SetupTest()
 
 			tc.malleate()
 
 			if tc.expPass {
-				require.NotPanics(t, func() {
+				suite.Require().NotPanics(func() {
 					genutil.DeliverGenTxs(
-						f.ctx, genTxs, f.stakingKeeper, f.baseApp.DeliverTx,
-						f.encodingConfig.TxConfig,
+						suite.ctx, genTxs, suite.stakingKeeper, suite.baseApp.DeliverTx,
+						suite.encodingConfig.TxConfig,
 					)
 				})
 			} else {
 				_, err := genutil.DeliverGenTxs(
-					f.ctx, genTxs, f.stakingKeeper, f.baseApp.DeliverTx,
-					f.encodingConfig.TxConfig,
+					suite.ctx, genTxs, suite.stakingKeeper, suite.baseApp.DeliverTx,
+					suite.encodingConfig.TxConfig,
 				)
 
-				assert.ErrorContains(t, err, tc.expErrMsg)
+				suite.Require().Error(err)
 			}
 		})
 	}
+}
+
+func TestGenTxTestSuite(t *testing.T) {
+	suite.Run(t, new(GenTxTestSuite))
 }

@@ -14,10 +14,11 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/store/types"
 )
 
-var _ types.StreamingService = &StreamingService{}
+var _ baseapp.StreamingService = &StreamingService{}
 
 // StreamingService is a concrete implementation of StreamingService that writes
 // state changes out to files.

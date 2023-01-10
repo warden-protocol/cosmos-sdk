@@ -1,7 +1,7 @@
 package transient
 
 import (
-	dbm "github.com/cosmos/cosmos-db"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"

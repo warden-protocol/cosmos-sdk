@@ -11,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/group"
 )
 
-// InitGenesis initializes the group module's genesis state.
 func (k Keeper) InitGenesis(ctx types.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState group.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
@@ -43,7 +42,6 @@ func (k Keeper) InitGenesis(ctx types.Context, cdc codec.JSONCodec, data json.Ra
 	return []abci.ValidatorUpdate{}
 }
 
-// ExportGenesis returns the group module's exported genesis.
 func (k Keeper) ExportGenesis(ctx types.Context, cdc codec.JSONCodec) *group.GenesisState {
 	genesisState := group.NewGenesisState()
 

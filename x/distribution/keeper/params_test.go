@@ -40,7 +40,9 @@ func TestParams(t *testing.T) {
 	)
 
 	// default params
-	communityTax := sdk.NewDecWithPrec(2, 2) // 2%
+	communityTax := sdk.NewDecWithPrec(2, 2)        // 2%
+	baseProposerReward := sdk.NewDecWithPrec(1, 2)  // 1%
+	bonusProposerReward := sdk.NewDecWithPrec(4, 2) // 4%
 	withdrawAddrEnabled := true
 
 	testCases := []struct {
@@ -53,8 +55,8 @@ func TestParams(t *testing.T) {
 			name: "community tax > 1",
 			input: types.Params{
 				CommunityTax:        sdk.NewDecWithPrec(2, 0),
-				BaseProposerReward:  sdk.ZeroDec(),
-				BonusProposerReward: sdk.ZeroDec(),
+				BaseProposerReward:  baseProposerReward,
+				BonusProposerReward: bonusProposerReward,
 				WithdrawAddrEnabled: withdrawAddrEnabled,
 			},
 			expErr:    true,
@@ -64,8 +66,8 @@ func TestParams(t *testing.T) {
 			name: "negative community tax",
 			input: types.Params{
 				CommunityTax:        sdk.NewDecWithPrec(-2, 1),
-				BaseProposerReward:  sdk.ZeroDec(),
-				BonusProposerReward: sdk.ZeroDec(),
+				BaseProposerReward:  baseProposerReward,
+				BonusProposerReward: bonusProposerReward,
 				WithdrawAddrEnabled: withdrawAddrEnabled,
 			},
 			expErr:    true,
@@ -75,30 +77,52 @@ func TestParams(t *testing.T) {
 			name: "base proposer reward > 1",
 			input: types.Params{
 				CommunityTax:        communityTax,
-				BaseProposerReward:  sdk.NewDecWithPrec(1, 2),
-				BonusProposerReward: sdk.ZeroDec(),
+				BaseProposerReward:  sdk.NewDecWithPrec(2, 0),
+				BonusProposerReward: bonusProposerReward,
 				WithdrawAddrEnabled: withdrawAddrEnabled,
 			},
-			expErr:    false,
-			expErrMsg: "base proposer rewards should not be taken into account",
+			expErr:    true,
+			expErrMsg: "sum of base, bonus proposer rewards, and community tax cannot be greater than one",
+		},
+		{
+			name: "negative base proposer reward",
+			input: types.Params{
+				CommunityTax:        communityTax,
+				BaseProposerReward:  sdk.NewDecWithPrec(-2, 0),
+				BonusProposerReward: bonusProposerReward,
+				WithdrawAddrEnabled: withdrawAddrEnabled,
+			},
+			expErr:    true,
+			expErrMsg: "base proposer reward should be positive",
 		},
 		{
 			name: "bonus proposer reward > 1",
 			input: types.Params{
 				CommunityTax:        communityTax,
-				BaseProposerReward:  sdk.NewDecWithPrec(1, 2),
-				BonusProposerReward: sdk.ZeroDec(),
+				BaseProposerReward:  baseProposerReward,
+				BonusProposerReward: sdk.NewDecWithPrec(2, 0),
 				WithdrawAddrEnabled: withdrawAddrEnabled,
 			},
-			expErr:    false,
-			expErrMsg: "bonus proposer rewards should not be taken into account",
+			expErr:    true,
+			expErrMsg: "sum of base, bonus proposer rewards, and community tax cannot be greater than one",
+		},
+		{
+			name: "negative bonus proposer reward",
+			input: types.Params{
+				CommunityTax:        communityTax,
+				BaseProposerReward:  baseProposerReward,
+				BonusProposerReward: sdk.NewDecWithPrec(-2, 0),
+				WithdrawAddrEnabled: withdrawAddrEnabled,
+			},
+			expErr:    true,
+			expErrMsg: "bonus proposer reward should be positive",
 		},
 		{
 			name: "all good",
 			input: types.Params{
 				CommunityTax:        communityTax,
-				BaseProposerReward:  sdk.ZeroDec(),
-				BonusProposerReward: sdk.ZeroDec(),
+				BaseProposerReward:  baseProposerReward,
+				BonusProposerReward: bonusProposerReward,
 				WithdrawAddrEnabled: withdrawAddrEnabled,
 			},
 			expErr: false,

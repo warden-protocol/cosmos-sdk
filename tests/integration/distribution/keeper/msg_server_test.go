@@ -1,10 +1,7 @@
 package keeper_test
 
 import (
-	"testing"
-
 	"cosmossdk.io/math"
-	"gotest.tools/v3/assert"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -13,12 +10,11 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-func TestMsgUpdateParams(t *testing.T) {
-	t.Parallel()
-	f := initFixture(t)
-
+func (s *KeeperTestSuite) TestMsgUpdateParams() {
 	// default params
-	communityTax := sdk.NewDecWithPrec(2, 2) // 2%
+	communityTax := sdk.NewDecWithPrec(2, 2)        // 2%
+	baseProposerReward := sdk.NewDecWithPrec(1, 2)  // 1%
+	bonusProposerReward := sdk.NewDecWithPrec(4, 2) // 4%
 	withdrawAddrEnabled := true
 
 	testCases := []struct {
@@ -33,9 +29,9 @@ func TestMsgUpdateParams(t *testing.T) {
 				Authority: "invalid",
 				Params: types.Params{
 					CommunityTax:        sdk.NewDecWithPrec(2, 0),
+					BaseProposerReward:  baseProposerReward,
+					BonusProposerReward: bonusProposerReward,
 					WithdrawAddrEnabled: withdrawAddrEnabled,
-					BaseProposerReward:  sdk.ZeroDec(),
-					BonusProposerReward: sdk.ZeroDec(),
 				},
 			},
 			expErr:    true,
@@ -44,12 +40,12 @@ func TestMsgUpdateParams(t *testing.T) {
 		{
 			name: "community tax > 1",
 			input: &types.MsgUpdateParams{
-				Authority: f.distrKeeper.GetAuthority(),
+				Authority: s.distrKeeper.GetAuthority(),
 				Params: types.Params{
 					CommunityTax:        sdk.NewDecWithPrec(2, 0),
+					BaseProposerReward:  baseProposerReward,
+					BonusProposerReward: bonusProposerReward,
 					WithdrawAddrEnabled: withdrawAddrEnabled,
-					BaseProposerReward:  sdk.ZeroDec(),
-					BonusProposerReward: sdk.ZeroDec(),
 				},
 			},
 			expErr:    true,
@@ -58,53 +54,81 @@ func TestMsgUpdateParams(t *testing.T) {
 		{
 			name: "negative community tax",
 			input: &types.MsgUpdateParams{
-				Authority: f.distrKeeper.GetAuthority(),
+				Authority: s.distrKeeper.GetAuthority(),
 				Params: types.Params{
 					CommunityTax:        sdk.NewDecWithPrec(-2, 1),
+					BaseProposerReward:  baseProposerReward,
+					BonusProposerReward: bonusProposerReward,
 					WithdrawAddrEnabled: withdrawAddrEnabled,
-					BaseProposerReward:  sdk.ZeroDec(),
-					BonusProposerReward: sdk.ZeroDec(),
 				},
 			},
 			expErr:    true,
 			expErrMsg: "community tax should be non-negative and less than one",
 		},
 		{
-			name: "base proposer reward set",
+			name: "base proposer reward > 1",
 			input: &types.MsgUpdateParams{
-				Authority: f.distrKeeper.GetAuthority(),
+				Authority: s.distrKeeper.GetAuthority(),
 				Params: types.Params{
 					CommunityTax:        communityTax,
-					BaseProposerReward:  sdk.NewDecWithPrec(1, 2),
-					BonusProposerReward: sdk.ZeroDec(),
+					BaseProposerReward:  sdk.NewDecWithPrec(2, 0),
+					BonusProposerReward: bonusProposerReward,
 					WithdrawAddrEnabled: withdrawAddrEnabled,
 				},
 			},
 			expErr:    true,
-			expErrMsg: "cannot update base or bonus proposer reward because these are deprecated fields: invalid request",
+			expErrMsg: "sum of base, bonus proposer rewards, and community tax cannot be greater than one",
 		},
 		{
-			name: "bonus proposer reward set",
+			name: "negative base proposer reward",
 			input: &types.MsgUpdateParams{
-				Authority: f.distrKeeper.GetAuthority(),
+				Authority: s.distrKeeper.GetAuthority(),
 				Params: types.Params{
 					CommunityTax:        communityTax,
-					BaseProposerReward:  sdk.ZeroDec(),
-					BonusProposerReward: sdk.NewDecWithPrec(1, 2),
+					BaseProposerReward:  sdk.NewDecWithPrec(-2, 0),
+					BonusProposerReward: bonusProposerReward,
 					WithdrawAddrEnabled: withdrawAddrEnabled,
 				},
 			},
 			expErr:    true,
-			expErrMsg: "cannot update base or bonus proposer reward because these are deprecated fields: invalid request",
+			expErrMsg: "base proposer reward should be positive",
+		},
+		{
+			name: "bonus proposer reward > 1",
+			input: &types.MsgUpdateParams{
+				Authority: s.distrKeeper.GetAuthority(),
+				Params: types.Params{
+					CommunityTax:        communityTax,
+					BaseProposerReward:  baseProposerReward,
+					BonusProposerReward: sdk.NewDecWithPrec(2, 0),
+					WithdrawAddrEnabled: withdrawAddrEnabled,
+				},
+			},
+			expErr:    true,
+			expErrMsg: "sum of base, bonus proposer rewards, and community tax cannot be greater than one",
+		},
+		{
+			name: "negative bonus proposer reward",
+			input: &types.MsgUpdateParams{
+				Authority: s.distrKeeper.GetAuthority(),
+				Params: types.Params{
+					CommunityTax:        communityTax,
+					BaseProposerReward:  baseProposerReward,
+					BonusProposerReward: sdk.NewDecWithPrec(-2, 0),
+					WithdrawAddrEnabled: withdrawAddrEnabled,
+				},
+			},
+			expErr:    true,
+			expErrMsg: "bonus proposer reward should be positive",
 		},
 		{
 			name: "all good",
 			input: &types.MsgUpdateParams{
-				Authority: f.distrKeeper.GetAuthority(),
+				Authority: s.distrKeeper.GetAuthority(),
 				Params: types.Params{
 					CommunityTax:        communityTax,
-					BaseProposerReward:  sdk.ZeroDec(),
-					BonusProposerReward: sdk.ZeroDec(),
+					BaseProposerReward:  baseProposerReward,
+					BonusProposerReward: bonusProposerReward,
 					WithdrawAddrEnabled: withdrawAddrEnabled,
 				},
 			},
@@ -114,22 +138,20 @@ func TestMsgUpdateParams(t *testing.T) {
 
 	for _, tc := range testCases {
 		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			_, err := f.msgServer.UpdateParams(f.ctx, tc.input)
+		s.Run(tc.name, func() {
+			_, err := s.msgServer.UpdateParams(s.ctx, tc.input)
 
 			if tc.expErr {
-				assert.ErrorContains(t, err, tc.expErrMsg)
+				s.Require().Error(err)
+				s.Require().Contains(err.Error(), tc.expErrMsg)
 			} else {
-				assert.NilError(t, err)
+				s.Require().NoError(err)
 			}
 		})
 	}
 }
 
-func TestCommunityPoolSpend(t *testing.T) {
-	t.Parallel()
-	f := initFixture(t)
-
+func (s *KeeperTestSuite) TestCommunityPoolSpend() {
 	recipient := sdk.AccAddress([]byte("addr1_______________"))
 
 	testCases := []struct {
@@ -151,7 +173,7 @@ func TestCommunityPoolSpend(t *testing.T) {
 		{
 			name: "invalid recipient",
 			input: &types.MsgCommunityPoolSpend{
-				Authority: f.distrKeeper.GetAuthority(),
+				Authority: s.distrKeeper.GetAuthority(),
 				Recipient: "invalid",
 				Amount:    sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100))),
 			},
@@ -161,7 +183,7 @@ func TestCommunityPoolSpend(t *testing.T) {
 		{
 			name: "valid message",
 			input: &types.MsgCommunityPoolSpend{
-				Authority: f.distrKeeper.GetAuthority(),
+				Authority: s.distrKeeper.GetAuthority(),
 				Recipient: recipient.String(),
 				Amount:    sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100))),
 			},
@@ -171,36 +193,34 @@ func TestCommunityPoolSpend(t *testing.T) {
 
 	for _, tc := range testCases {
 		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			_, err := f.msgServer.CommunityPoolSpend(f.ctx, tc.input)
+		s.Run(tc.name, func() {
+			_, err := s.msgServer.CommunityPoolSpend(s.ctx, tc.input)
 
 			if tc.expErr {
-				assert.ErrorContains(t, err, tc.expErrMsg)
+				s.Require().Error(err)
+				s.Require().Contains(err.Error(), tc.expErrMsg)
 			} else {
-				assert.NilError(t, err)
+				s.Require().NoError(err)
+
 				r, err := sdk.AccAddressFromBech32(tc.input.Recipient)
-				assert.NilError(t, err)
+				s.Require().NoError(err)
 
-				b := f.bankKeeper.GetAllBalances(f.ctx, r)
-
-				assert.Assert(t, b.IsZero() == false)
+				b := s.bankKeeper.GetAllBalances(s.ctx, r)
+				s.Require().False(b.IsZero())
 			}
 		})
 	}
 }
 
-func TestMsgDepositValidatorRewardsPool(t *testing.T) {
-	t.Parallel()
-	f := initFixture(t)
-
-	tstaking := stakingtestutil.NewHelper(t, f.ctx, f.stakingKeeper)
+func (s *KeeperTestSuite) TestMsgDepositValidatorRewardsPool() {
+	tstaking := stakingtestutil.NewHelper(s.T(), s.ctx, s.stakingKeeper)
 	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), math.LegacyNewDec(0))
-	tstaking.CreateValidator(f.valAddrs[1], valConsPk0, sdk.NewInt(100), true)
+	tstaking.CreateValidator(s.valAddrs[1], valConsPk0, sdk.NewInt(100), true)
 
 	// mint a non-staking token and send to an account
 	amt := sdk.NewCoins(sdk.NewInt64Coin("foo", 500))
-	f.bankKeeper.MintCoins(f.ctx, minttypes.ModuleName, amt)
-	f.bankKeeper.SendCoinsFromModuleToAccount(f.ctx, minttypes.ModuleName, f.addrs[0], amt)
+	s.bankKeeper.MintCoins(s.ctx, minttypes.ModuleName, amt)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, minttypes.ModuleName, s.addrs[0], amt)
 
 	testCases := []struct {
 		name      string
@@ -211,25 +231,25 @@ func TestMsgDepositValidatorRewardsPool(t *testing.T) {
 		{
 			name: "happy path (staking token)",
 			input: &types.MsgDepositValidatorRewardsPool{
-				Authority:        f.addrs[0].String(),
-				ValidatorAddress: f.valAddrs[1].String(),
-				Amount:           sdk.NewCoins(sdk.NewCoin(f.stakingKeeper.BondDenom(f.ctx), sdk.NewInt(100))),
+				Authority:        s.addrs[0].String(),
+				ValidatorAddress: s.valAddrs[1].String(),
+				Amount:           sdk.NewCoins(sdk.NewCoin(s.stakingKeeper.BondDenom(s.ctx), sdk.NewInt(100))),
 			},
 		},
 		{
 			name: "happy path (non-staking token)",
 			input: &types.MsgDepositValidatorRewardsPool{
-				Authority:        f.addrs[0].String(),
-				ValidatorAddress: f.valAddrs[1].String(),
+				Authority:        s.addrs[0].String(),
+				ValidatorAddress: s.valAddrs[1].String(),
 				Amount:           amt,
 			},
 		},
 		{
 			name: "invalid validator",
 			input: &types.MsgDepositValidatorRewardsPool{
-				Authority:        f.addrs[0].String(),
+				Authority:        s.addrs[0].String(),
 				ValidatorAddress: sdk.ValAddress([]byte("addr1_______________")).String(),
-				Amount:           sdk.NewCoins(sdk.NewCoin(f.stakingKeeper.BondDenom(f.ctx), sdk.NewInt(100))),
+				Amount:           sdk.NewCoins(sdk.NewCoin(s.stakingKeeper.BondDenom(s.ctx), sdk.NewInt(100))),
 			},
 			expErr:    true,
 			expErrMsg: "validator does not exist",
@@ -238,22 +258,23 @@ func TestMsgDepositValidatorRewardsPool(t *testing.T) {
 
 	for _, tc := range testCases {
 		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			_, err := f.msgServer.DepositValidatorRewardsPool(f.ctx, tc.input)
+		s.Run(tc.name, func() {
+			_, err := s.msgServer.DepositValidatorRewardsPool(s.ctx, tc.input)
 
 			if tc.expErr {
-				assert.ErrorContains(t, err, tc.expErrMsg)
+				s.Require().Error(err)
+				s.Require().Contains(err.Error(), tc.expErrMsg)
 			} else {
-				assert.NilError(t, err)
+				s.Require().NoError(err)
 
 				valAddr, err := sdk.ValAddressFromBech32(tc.input.ValidatorAddress)
-				assert.NilError(t, err)
+				s.Require().NoError(err)
 
 				// check validator outstanding rewards
-				outstandingRewards := f.distrKeeper.GetValidatorOutstandingRewards(f.ctx, valAddr)
+				outstandingRewards := s.distrKeeper.GetValidatorOutstandingRewards(s.ctx, valAddr)
 				for _, c := range tc.input.Amount {
 					x := outstandingRewards.Rewards.AmountOf(c.Denom)
-					assert.DeepEqual(t, x, sdk.NewDecFromInt(c.Amount))
+					s.Require().Equal(x, sdk.NewDecFromInt(c.Amount))
 				}
 			}
 		})

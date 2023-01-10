@@ -359,8 +359,6 @@ func TestMsgSetSendEnabled(t *testing.T) {
 		sdk.Coins{{Denom: "foocoin", Amount: sdk.NewInt(5)}},
 		addr1Str,
 		"set default send enabled to true",
-		"Change send enabled",
-		"Modify send enabled and set to true",
 	)
 	require.NoError(t, err, "making goodGovProp")
 	badGovProp, err := govv1.NewMsgSubmitProposal(
@@ -370,8 +368,6 @@ func TestMsgSetSendEnabled(t *testing.T) {
 		sdk.Coins{{Denom: "foocoin", Amount: sdk.NewInt(5)}},
 		addr1Str,
 		"set default send enabled to true",
-		"Change send enabled",
-		"Modify send enabled and set to true",
 	)
 	require.NoError(t, err, "making badGovProp")
 

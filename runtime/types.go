@@ -9,8 +9,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
-const ModuleName = "runtime"
-
 // App implements the common methods for a Cosmos SDK-based application
 // specific blockchain.
 type AppI interface {
