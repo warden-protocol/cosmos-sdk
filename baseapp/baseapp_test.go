@@ -1,13 +1,15 @@
 package baseapp_test
 
 import (
-	"cosmossdk.io/depinject"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/runtime"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
+
+	"cosmossdk.io/depinject"
+
+	"github.com/cosmos/cosmos-sdk/runtime"
 
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
@@ -821,5 +823,4 @@ func TestBaseAppPostHandler(t *testing.T) {
 			tc.testFunc()
 		})
 	}
-
 }
