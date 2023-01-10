@@ -727,7 +727,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 		return gInfo, nil, events, priority, err
 	}
 
-	// Case 2: Run PostHandler and only
+	// Case 2: tx errors and the post handler is set. Run PostHandler and revert state from runMsgs
 	if err != nil && app.postHandler != nil {
 		// Run optional postHandlers with a context branched off the ante handler ctx
 		postCtx, postCache := app.cacheTxContext(ctx, txBytes)
@@ -761,7 +761,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 		return gInfo, result, events, priority, err
 	}
 
-	// Case 3: Run Post Handler with runMsgCtx so that the state from runMsgs is persisted
+	// Case 3: tx successful and post handler is set. Run Post Handler with runMsgCtx so that the state from runMsgs is persisted
 	if app.postHandler != nil {
 		newCtx, err := app.postHandler(runMsgCtx, tx, mode == runTxModeSimulate, err == nil)
 		if err != nil {
