@@ -207,6 +207,20 @@ func counterEvent(evType string, msgCount int64) sdk.Events {
 	}
 }
 
+func postHandlerTxTest(t *testing.T, capKey storetypes.StoreKey, storeKey []byte) sdk.PostHandler {
+	return func(ctx sdk.Context, tx sdk.Tx, simulate, success bool) (sdk.Context, error) {
+		counter, _ := parseTxMemo(t, tx)
+
+		ctx.EventManager().EmitEvents(
+			counterEvent("post_handler", counter),
+		)
+
+		ctx = ctx.WithPriority(testTxPriority)
+
+		return ctx, nil
+	}
+}
+
 func anteHandlerTxTest(t *testing.T, capKey storetypes.StoreKey, storeKey []byte) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
 		store := ctx.KVStore(capKey)
