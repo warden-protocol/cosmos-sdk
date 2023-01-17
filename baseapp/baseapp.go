@@ -675,9 +675,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 		anteCtx, msCache = app.cacheTxContext(ctx, txBytes)
 		anteCtx = anteCtx.WithEventManager(sdk.NewEventManager())
 		newCtx, err := app.anteHandler(anteCtx, tx, mode == runTxModeSimulate)
-		if err != nil {
-			return gInfo, nil, nil, 0, err
-		}
 
 		if !newCtx.IsZero() {
 			// At this point, newCtx.MultiStore() is a store branch, or something else
@@ -689,12 +686,17 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 			ctx = newCtx.WithMultiStore(ms)
 		}
 
+		events := ctx.EventManager().Events()
+
 		// GasMeter expected to be set in AnteHandler
 		gasWanted = ctx.GasMeter().Limit()
-		priority = ctx.Priority()
-		events := ctx.EventManager().Events()
-		anteEvents = events.ToABCIEvents()
 
+		if err != nil {
+			return gInfo, nil, nil, 0, err
+		}
+
+		priority = ctx.Priority()
+		anteEvents = events.ToABCIEvents()
 		msCache.Write()
 	}
 
@@ -725,7 +727,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 
 	// Case 1: the msg errors and the post handler is not set.
 	if err != nil && app.postHandler == nil {
-		return gInfo, nil, events, priority, err
+		return gInfo, nil, anteEvents, priority, err
 	}
 
 	// Case 2: tx errors and the post handler is set. Run PostHandler and revert state from runMsgs
