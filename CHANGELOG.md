@@ -35,6 +35,31 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
+## [Unreleased]
+
+### Improvements
+
+* (simapp) [#15305](https://github.com/cosmos/cosmos-sdk/pull/15305) Add `AppStateFnWithExtendedCb` with callback function to extend rawState and `AppStateRandomizedFnWithState` with extra genesisState argument which is the genesis state of the app.
+* (cli) [#8](https://github.com/evmos/cosmos-sdk/pull/8) Add `auto` option for fees flag
+* (grpc) [#13144](https://github.com/cosmos/cosmos-sdk/pull/13144) Add validator distribution info grpc gateway get endpoint.
+
+### Bug Fixes
+
+* (x/auth/vesting) [#15383](https://github.com/cosmos/cosmos-sdk/pull/15383) Add extra checks when creating a periodic vesting account.
+
+## [v0.46.11-ledger](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.46.11) - 2022-03-03
+
+### Improvements
+
+* (deps) Migrate to [CometBFT](https://github.com/cometbft/cometbft). Follow the instructions in the [release notes](./RELEASE_NOTES.md).
+* (store) [#15152](https://github.com/cosmos/cosmos-sdk/pull/15152) Remove unmaintained and experimental `store/v2alpha1`.
+* (store) [#14410](https://github.com/cosmos/cosmos-sdk/pull/14410) `rootmulti.Store.loadVersion` has validation to check if all the module stores' height is correct, it will error if any module store has incorrect height.
+
+### Bug Fixes
+
+* [#15243](https://github.com/cosmos/cosmos-sdk/pull/15243) `LatestBlockResponse` & `BlockByHeightResponse` types' field `sdk_block` was incorrectly cast `proposer_address` bytes to validator operator address, now to consensus address.
+
+
 ## [v0.46.10-alpha.ledger.2](https://github.com/evmos/cosmos-sdk/releases/tag/v0.46.10-alpha.ledger.2) - 2023-03-15
 
 ### Improvements
@@ -52,16 +77,10 @@ Ref: https://keepachangelog.com/en/1.0.0/
 * (cli) [#16](https://github.com/evmos/cosmos-sdk/pull/16) Set `--fees` flag default value to empty string
 
 ## [v0.46.10-ledger](https://github.com/evmos/cosmos-sdk/releases/tag/v0.46.10-ledger) - 2023-02-24
-=======
-## v0.46.10-ledger - 2023-02-24
-
 
 ### Improvements
 
 * (cli) [#14953](https://github.com/cosmos/cosmos-sdk/pull/14953) Enable profiling block replay during abci handshake with `--cpu-profile`.
-* (store) [#14410](https://github.com/cosmos/cosmos-sdk/pull/14410) `rootmulti.Store.loadVersion` has validation to check if all the module stores' height is correct, it will error if any module store has incorrect height.
-* (cli) [#8](https://github.com/evmos/cosmos-sdk/pull/8) Add `auto` option for fees flag
-* (grpc) [#13144](https://github.com/cosmos/cosmos-sdk/pull/13144) Add validator distribution info grpc gateway get endpoint.
 
 ## [v0.46.9](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.46.9) - 2022-02-07
 
