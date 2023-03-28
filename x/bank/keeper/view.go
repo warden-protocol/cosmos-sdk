@@ -221,7 +221,7 @@ func (k BaseViewKeeper) DelegatableCoins(ctx sdk.Context, addr sdk.AccAddress) s
 
 func (k BaseViewKeeper) unlockedCoins(total, locked sdk.Coins) (spendable sdk.Coins) {
 	spendable, hasNeg := total.SafeSub(locked...)
-	if hasNeg {
+	if hasNeg || spendable == nil {
 		spendable = sdk.NewCoins()
 		return
 	}
