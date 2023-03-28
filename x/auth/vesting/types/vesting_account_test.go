@@ -15,6 +15,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+
+	mocks "github.com/cosmos/cosmos-sdk/testutil/vesting"
 )
 
 var (
@@ -99,6 +101,24 @@ func TestSpendableCoinsContVestingAcc(t *testing.T) {
 	// require that all vested coins (50%) are spendable
 	lockedCoins = cva.LockedCoins(now.Add(12 * time.Hour))
 	require.Equal(t, sdk.Coins{sdk.NewInt64Coin(feeDenom, 500), sdk.NewInt64Coin(stakeDenom, 50)}, lockedCoins)
+}
+
+func TestDelegatableCoinsContVestingAcc(t *testing.T) {
+	now := tmtime.Now()
+	endTime := now.Add(24 * time.Hour)
+
+	bacc, origCoins := initBaseAccount()
+	cva := types.NewContinuousVestingAccount(bacc, origCoins, now.Unix(), endTime.Unix())
+
+	// require no locked coins from delegating at any point
+	lockedCoins := cva.LockedCoinsFromDelegating(now)
+	require.Equal(t, sdk.NewCoins(), lockedCoins)
+
+	lockedCoins = cva.LockedCoinsFromDelegating(endTime)
+	require.Equal(t, sdk.NewCoins(), lockedCoins)
+
+	lockedCoins = cva.LockedCoinsFromDelegating(now.Add(12 * time.Hour))
+	require.Equal(t, sdk.NewCoins(), lockedCoins)
 }
 
 func TestTrackDelegationContVestingAcc(t *testing.T) {
@@ -675,6 +695,28 @@ func TestTrackUndelegationPermLockedVestingAcc(t *testing.T) {
 	plva.TrackUndelegation(sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)})
 	require.Nil(t, plva.DelegatedFree)
 	require.Equal(t, sdk.Coins{sdk.NewInt64Coin(stakeDenom, 25)}, plva.DelegatedVesting)
+}
+
+func TestDelegatableCoinsMockVestingAcc(t *testing.T) {
+	now := tmtime.Now()
+	endTime := now.Add(24 * time.Hour)
+
+	bacc, origCoins := initBaseAccount()
+	cva := types.NewContinuousVestingAccount(bacc, origCoins, now.Unix(), endTime.Unix())
+	mvdva := mocks.NewMockVestedDelegateVestingAccount(cva)
+
+	// require that all original coins are locked at the end of the vesting
+	// schedule
+	lockedCoinsFromDelegating := mvdva.LockedCoinsFromDelegating(now)
+	require.Equal(t, origCoins, lockedCoinsFromDelegating)
+
+	// require that there exist no locked coins at the end
+	lockedCoinsFromDelegating = mvdva.LockedCoinsFromDelegating(endTime)
+	require.Equal(t, sdk.NewCoins(), lockedCoinsFromDelegating)
+
+	// require that all vested coins (50%) are delegatable
+	lockedCoinsFromDelegating = mvdva.LockedCoinsFromDelegating(now.Add(12 * time.Hour))
+	require.Equal(t, sdk.Coins{sdk.NewInt64Coin(feeDenom, 500), sdk.NewInt64Coin(stakeDenom, 50)}, lockedCoinsFromDelegating)
 }
 
 func TestGenesisAccountValidate(t *testing.T) {

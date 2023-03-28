@@ -152,14 +152,14 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
 	}
 
-	spendableBalances := k.SpendableCoins(ctx, delegatorAddr)
+	delegatableBalances := k.DelegatableCoins(ctx, delegatorAddr)
 	balances := sdk.NewCoins()
 
 	for _, coin := range amt {
-		ok, spendableBalance := spendableBalances.Find(coin.GetDenom())
-		if !ok || spendableBalance.IsLT(coin) {
+		ok, delegatableBalance := delegatableBalances.Find(coin.GetDenom())
+		if !ok || delegatableBalance.IsLT(coin) {
 			return sdkerrors.Wrapf(
-				sdkerrors.ErrInsufficientFunds, "failed to delegate; %s is smaller than %s", spendableBalance, amt,
+				sdkerrors.ErrInsufficientFunds, "failed to delegate; %s is smaller than %s", delegatableBalance, amt,
 			)
 		}
 
