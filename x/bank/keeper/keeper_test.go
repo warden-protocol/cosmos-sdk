@@ -12,6 +12,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/simapp"
+	mock_vesting "github.com/cosmos/cosmos-sdk/testutil/vesting"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -91,6 +92,26 @@ func (suite *IntegrationTestSuite) initKeepersWithmAccPerms(blockedAddrs map[str
 	)
 
 	return authKeeper, keeper
+}
+
+func (suite *IntegrationTestSuite) initKeepersWithMockVesting() (authkeeper.AccountKeeper, keeper.BaseKeeper) {
+	app := suite.app
+
+	encCfg := simapp.MakeTestEncodingConfig()
+	mock_vesting.RegisterInterfaces(encCfg.InterfaceRegistry)
+	appCodec := encCfg.Codec
+
+	authKeeper := authkeeper.NewAccountKeeper(
+		appCodec, app.GetKey(types.StoreKey), app.GetSubspace(types.ModuleName),
+		authtypes.ProtoBaseAccount, simapp.GetMaccPerms(), sdk.Bech32MainPrefix,
+	)
+	keeper := keeper.NewBaseKeeper(
+		appCodec, app.GetKey(types.StoreKey), authKeeper,
+		app.GetSubspace(types.ModuleName), map[string]bool{},
+	)
+
+	return authKeeper, keeper
+
 }
 
 func (suite *IntegrationTestSuite) SetupTest() {
@@ -912,6 +933,34 @@ func (suite *IntegrationTestSuite) TestDelegateCoins_Invalid() {
 	suite.Require().Error(app.BankKeeper.DelegateCoins(ctx, addr1, addrModule, delCoins))
 	app.AccountKeeper.SetAccount(ctx, acc)
 	suite.Require().Error(app.BankKeeper.DelegateCoins(ctx, addr1, addrModule, origCoins.Add(origCoins...)))
+}
+
+func (suite *IntegrationTestSuite) TestDelegatableCoins() {
+	ctx := suite.ctx
+	now := tmtime.Now()
+	ctx = ctx.WithBlockHeader(tmproto.Header{Time: now})
+	endTime := now.Add(24 * time.Hour)
+
+	authKeeper, keeper := suite.initKeepersWithMockVesting()
+
+	testAddr := sdk.AccAddress([]byte("addr1_______________"))
+	addrModule := sdk.AccAddress([]byte("moduleAcc___________"))
+
+	macc := authKeeper.NewAccountWithAddress(ctx, addrModule)
+	authKeeper.SetAccount(ctx, macc)
+
+	bacc := authtypes.NewBaseAccountWithAddress(testAddr)
+	origCoins := sdk.NewCoins(newFooCoin(100))
+	delCoins := sdk.NewCoins(newFooCoin(50))
+	cva := vesting.NewContinuousVestingAccount(bacc, origCoins, now.Unix(), endTime.Unix())
+	mvdva := mock_vesting.NewMockVestedDelegateVestingAccount(cva)
+	authKeeper.SetAccount(ctx, mvdva)
+
+	suite.Require().NoError(testutil.FundAccount(keeper, ctx, testAddr, origCoins))
+
+	ctx = ctx.WithBlockTime(now.Add(12 * time.Hour))
+	suite.Require().NoError(keeper.DelegateCoins(ctx, testAddr, addrModule, delCoins))
+	suite.Require().Equal(origCoins.Sub(delCoins...), keeper.DelegatableCoins(ctx, testAddr))
 }
 
 func (suite *IntegrationTestSuite) TestUndelegateCoins() {
