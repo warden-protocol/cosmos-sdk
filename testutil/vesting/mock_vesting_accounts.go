@@ -10,7 +10,12 @@ import (
 // LockedCoinsFromDelegating prevents the mock vesting account from delegating
 // any unvested tokens.
 func (mvdva MockVestedDelegateVestingAccount) LockedCoinsFromDelegating(blockTime time.Time) sdk.Coins {
-	return mvdva.ContinuousVestingAccount.LockedCoins(blockTime)
+	locked := mvdva.ContinuousVestingAccount.GetVestingCoins(blockTime)
+	if locked == nil {
+		return sdk.NewCoins()
+	}
+
+	return locked
 }
 
 func NewMockVestedDelegateVestingAccount(cva *types.ContinuousVestingAccount) *MockVestedDelegateVestingAccount {
