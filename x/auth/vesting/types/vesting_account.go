@@ -48,6 +48,13 @@ func (bva BaseVestingAccount) LockedCoinsFromVesting(vestingCoins sdk.Coins) sdk
 	return lockedCoins
 }
 
+// LockedCoinsFromDelegating returns the coins that cannot be delegated. By default,
+// the BaseVestingAccount has no restrictions on delegating coins, regardless of whether
+// they have vested. This method can be used to implement custom logic for delegating coins.
+func (bva BaseVestingAccount) LockedCoinsFromDelegating(blockTime time.Time) sdk.Coins {
+	return sdk.Coins{}
+}
+
 // TrackDelegation tracks a delegation amount for any given vesting account type
 // given the amount of coins currently vesting and the current account balance
 // of the delegation denominations.

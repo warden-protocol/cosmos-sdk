@@ -27,6 +27,8 @@ type ViewKeeper interface {
 	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 	LockedCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
+	LockedCoinsFromDelegating(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
+	DelegatableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 
 	IterateAccountBalances(ctx sdk.Context, addr sdk.AccAddress, cb func(coin sdk.Coin) (stop bool))
 	IterateAllBalances(ctx sdk.Context, cb func(address sdk.AccAddress, coin sdk.Coin) (stop bool))
@@ -165,15 +167,31 @@ func (k BaseViewKeeper) IterateAllBalances(ctx sdk.Context, cb func(sdk.AccAddre
 // For vesting accounts, LockedCoins is delegated to the concrete vesting account
 // type.
 func (k BaseViewKeeper) LockedCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
+	if vacc := k.getAccountAsVesting(ctx, addr); vacc != nil {
+		return (*vacc).LockedCoins(ctx.BlockTime())
+	}
+
+	return sdk.NewCoins()
+}
+
+func (k BaseViewKeeper) LockedCoinsFromDelegating(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
+	if vacc := k.getAccountAsVesting(ctx, addr); vacc != nil {
+		return (*vacc).LockedCoinsFromDelegating(ctx.BlockTime())
+	}
+
+	return sdk.NewCoins()
+}
+
+func (k BaseViewKeeper) getAccountAsVesting(ctx sdk.Context, addr sdk.AccAddress) *types.VestingAccount {
 	acc := k.ak.GetAccount(ctx, addr)
 	if acc != nil {
 		vacc, ok := acc.(types.VestingAccount)
 		if ok {
-			return vacc.LockedCoins(ctx.BlockTime())
+			return &vacc
 		}
 	}
 
-	return sdk.NewCoins()
+	return nil
 }
 
 // SpendableCoins returns the total balances of spendable coins for an account
@@ -190,6 +208,18 @@ func (k BaseViewKeeper) spendableCoins(ctx sdk.Context, addr sdk.AccAddress) (sp
 	total = k.GetAllBalances(ctx, addr)
 	locked := k.LockedCoins(ctx, addr)
 
+	spendable = k.unlockedCoins(total, locked)
+	return
+}
+
+func (k BaseViewKeeper) DelegatableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
+	total := k.GetAllBalances(ctx, addr)
+	locked := k.LockedCoinsFromDelegating(ctx, addr)
+
+	return k.unlockedCoins(total, locked)
+}
+
+func (k BaseViewKeeper) unlockedCoins(total, locked sdk.Coins) (spendable sdk.Coins) {
 	spendable, hasNeg := total.SafeSub(locked...)
 	if hasNeg {
 		spendable = sdk.NewCoins()

@@ -1,0 +1,14 @@
+syntax = "proto3";
+package vesting;
+
+import "gogoproto/gogo.proto";
+import "cosmos/vesting/v1beta1/vesting.proto";
+
+option go_package = "github.com/cosmos/cosmos-sdk/testutil/vesting";
+
+message MockVestedDelegateVestingAccount {
+  option (gogoproto.goproto_getters)  = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  cosmos.vesting.v1beta1.ContinuousVestingAccount continuous_vesting_account = 1 [(gogoproto.embed) = true];
+}
