@@ -960,7 +960,9 @@ func (suite *IntegrationTestSuite) TestDelegatableCoins() {
 
 	ctx = ctx.WithBlockTime(now.Add(12 * time.Hour))
 	suite.Require().NoError(keeper.DelegateCoins(ctx, testAddr, addrModule, delCoins))
-	suite.Require().Equal(sdk.NewCoins(), keeper.DelegatableCoins(ctx, testAddr))
+
+	var emptyCoins sdk.Coins
+	suite.Require().Equal(emptyCoins, keeper.DelegatableCoins(ctx, testAddr))
 
 	suite.Require().Error(keeper.DelegateCoins(ctx, testAddr, addrModule, delCoins))
 }
