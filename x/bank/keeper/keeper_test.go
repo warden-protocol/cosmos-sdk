@@ -94,7 +94,7 @@ func (suite *IntegrationTestSuite) initKeepersWithmAccPerms(blockedAddrs map[str
 	return authKeeper, keeper
 }
 
-func (suite *IntegrationTestSuite) initKeepersWithMockVesting() (authkeeper.AccountKeeper, keeper.BaseKeeper) {
+func (suite *IntegrationTestSuite) initKeepersWithMockVestingTypes() (authkeeper.AccountKeeper, keeper.BaseKeeper) {
 	app := suite.app
 
 	encCfg := simapp.MakeTestEncodingConfig()
@@ -941,7 +941,7 @@ func (suite *IntegrationTestSuite) TestDelegatableCoins() {
 	ctx = ctx.WithBlockHeader(tmproto.Header{Time: now})
 	endTime := now.Add(24 * time.Hour)
 
-	authKeeper, keeper := suite.initKeepersWithMockVesting()
+	authKeeper, keeper := suite.initKeepersWithMockVestingTypes()
 
 	testAddr := sdk.AccAddress([]byte("addr1_______________"))
 	addrModule := sdk.AccAddress([]byte("moduleAcc___________"))
@@ -960,7 +960,9 @@ func (suite *IntegrationTestSuite) TestDelegatableCoins() {
 
 	ctx = ctx.WithBlockTime(now.Add(12 * time.Hour))
 	suite.Require().NoError(keeper.DelegateCoins(ctx, testAddr, addrModule, delCoins))
-	suite.Require().Equal(origCoins.Sub(delCoins...), keeper.DelegatableCoins(ctx, testAddr))
+	suite.Require().Equal(sdk.NewCoins(), keeper.DelegatableCoins(ctx, testAddr))
+
+	suite.Require().Error(keeper.DelegateCoins(ctx, testAddr, addrModule, delCoins))
 }
 
 func (suite *IntegrationTestSuite) TestUndelegateCoins() {
