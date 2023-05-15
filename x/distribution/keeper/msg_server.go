@@ -56,11 +56,14 @@ func (k msgServer) WithdrawDelegatorReward(goCtx context.Context, msg *types.Msg
 	if err != nil {
 		return nil, err
 	}
+
 	delegatorAddress, err := sdk.AccAddressFromBech32(msg.DelegatorAddress)
 	if err != nil {
 		return nil, err
 	}
-	amount, err := k.WithdrawDelegationRewards(ctx, delegatorAddress, valAddr)
+
+	// TODO: add max amount of rewards to be claimed
+	amount, err := k.WithdrawDelegationRewards(ctx, delegatorAddress, valAddr, nil)
 	if err != nil {
 		return nil, err
 	}

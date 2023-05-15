@@ -26,8 +26,9 @@ func (k Keeper) initializeValidator(ctx sdk.Context, val stakingtypes.ValidatorI
 
 // increment validator period, returning the period just ended
 func (k Keeper) IncrementValidatorPeriod(ctx sdk.Context, val stakingtypes.ValidatorI) uint64 {
+	valAddr := val.GetOperator()
 	// fetch current rewards
-	rewards := k.GetValidatorCurrentRewards(ctx, val.GetOperator())
+	rewards := k.GetValidatorCurrentRewards(ctx, valAddr)
 
 	// calculate current ratio
 	var current sdk.DecCoins
@@ -36,11 +37,11 @@ func (k Keeper) IncrementValidatorPeriod(ctx sdk.Context, val stakingtypes.Valid
 		// can't calculate ratio for zero-token validators
 		// ergo we instead add to the community pool
 		feePool := k.GetFeePool(ctx)
-		outstanding := k.GetValidatorOutstandingRewards(ctx, val.GetOperator())
+		outstanding := k.GetValidatorOutstandingRewards(ctx, valAddr)
 		feePool.CommunityPool = feePool.CommunityPool.Add(rewards.Rewards...)
 		outstanding.Rewards = outstanding.GetRewards().Sub(rewards.Rewards)
 		k.SetFeePool(ctx, feePool)
-		k.SetValidatorOutstandingRewards(ctx, val.GetOperator(), outstanding)
+		k.SetValidatorOutstandingRewards(ctx, valAddr, outstanding)
 
 		current = sdk.DecCoins{}
 	} else {
@@ -49,16 +50,16 @@ func (k Keeper) IncrementValidatorPeriod(ctx sdk.Context, val stakingtypes.Valid
 	}
 
 	// fetch historical rewards for last period
-	historical := k.GetValidatorHistoricalRewards(ctx, val.GetOperator(), rewards.Period-1).CumulativeRewardRatio
+	historical := k.GetValidatorHistoricalRewards(ctx, valAddr, rewards.Period-1).CumulativeRewardRatio
 
 	// decrement reference count
-	k.decrementReferenceCount(ctx, val.GetOperator(), rewards.Period-1)
+	k.decrementReferenceCount(ctx, valAddr, rewards.Period-1)
 
 	// set new historical rewards with reference count of 1
-	k.SetValidatorHistoricalRewards(ctx, val.GetOperator(), rewards.Period, types.NewValidatorHistoricalRewards(historical.Add(current...), 1))
+	k.SetValidatorHistoricalRewards(ctx, valAddr, rewards.Period, types.NewValidatorHistoricalRewards(historical.Add(current...), 1))
 
 	// set current rewards, incrementing period by 1
-	k.SetValidatorCurrentRewards(ctx, val.GetOperator(), types.NewValidatorCurrentRewards(sdk.DecCoins{}, rewards.Period+1))
+	k.SetValidatorCurrentRewards(ctx, valAddr, types.NewValidatorCurrentRewards(sdk.DecCoins{}, rewards.Period+1))
 
 	return rewards.Period
 }

@@ -79,19 +79,24 @@ func (k Keeper) SetWithdrawAddr(ctx sdk.Context, delegatorAddr sdk.AccAddress, w
 }
 
 // withdraw rewards from a delegation
-func (k Keeper) WithdrawDelegationRewards(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) (sdk.Coins, error) {
-	val := k.stakingKeeper.Validator(ctx, valAddr)
-	if val == nil {
+func (k Keeper) WithdrawDelegationRewards(
+	ctx sdk.Context,
+	delAddr sdk.AccAddress,
+	valAddr sdk.ValAddress,
+	maxAmount sdk.Coins,
+) (sdk.Coins, error) {
+	validator := k.stakingKeeper.Validator(ctx, valAddr)
+	if validator == nil {
 		return nil, types.ErrNoValidatorDistInfo
 	}
 
-	del := k.stakingKeeper.Delegation(ctx, delAddr, valAddr)
-	if del == nil {
+	delegation := k.stakingKeeper.Delegation(ctx, delAddr, valAddr)
+	if delegation == nil {
 		return nil, types.ErrEmptyDelegationDistInfo
 	}
 
 	// withdraw rewards
-	rewards, err := k.withdrawDelegationRewards(ctx, val, del)
+	rewards, err := k.withdrawDelegationRewards(ctx, validator, delegation, maxAmount)
 	if err != nil {
 		return nil, err
 	}

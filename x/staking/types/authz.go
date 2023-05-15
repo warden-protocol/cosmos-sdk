@@ -97,7 +97,8 @@ func (a StakeAuthorization) Accept(ctx sdk.Context, msg sdk.Msg) (authz.AcceptRe
 
 	if a.MaxTokens == nil {
 		return authz.AcceptResponse{
-			Accept: true, Delete: false,
+			Accept: true,
+			Delete: false,
 			Updated: &StakeAuthorization{Validators: a.GetValidators(), AuthorizationType: a.GetAuthorizationType()},
 		}, nil
 	}
@@ -110,7 +111,8 @@ func (a StakeAuthorization) Accept(ctx sdk.Context, msg sdk.Msg) (authz.AcceptRe
 		return authz.AcceptResponse{Accept: true, Delete: true}, nil
 	}
 	return authz.AcceptResponse{
-		Accept: true, Delete: false,
+		Accept:  true,
+		Delete:  false,
 		Updated: &StakeAuthorization{Validators: a.GetValidators(), AuthorizationType: a.GetAuthorizationType(), MaxTokens: &limitLeft},
 	}, nil
 }
