@@ -35,6 +35,12 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
+## [Unreleased]
+
+### Bug Fixes
+
+* [#33](https://github.com/evmos/cosmos-sdk/pull/33) Update `cosmos/iavl` dependency with memory leak patch (state-sync).
+
 ## [v0.46.11-alpha.ledger](https://github.com/evmos/cosmos-sdk/releases/tag/v0.46.11-alpha.ledger) - 2022-03-23
 
 ### Improvements
