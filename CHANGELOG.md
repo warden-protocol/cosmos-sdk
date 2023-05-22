@@ -35,7 +35,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
-## [Unreleased]
+## [v0.46.11-alpha.ledger.7](https://github.com/evmos/cosmos-sdk/releases/tag/v0.46.11-alpha.ledger.7) - 2022-05-22
 
 ### Bug Fixes
 
