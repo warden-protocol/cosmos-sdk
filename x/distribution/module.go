@@ -38,6 +38,10 @@ func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
+func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
+	return nil
+}
+
 // RegisterLegacyAminoCodec registers the distribution module's types for the given codec.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
@@ -89,10 +93,6 @@ type AppModule struct {
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
 	stakingKeeper types.StakingKeeper
-}
-
-func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
-	return nil
 }
 
 // NewAppModule creates a new AppModule object

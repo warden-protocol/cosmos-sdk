@@ -39,13 +39,18 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Bug Fixes
 
-* [#33](https://github.com/evmos/cosmos-sdk/pull/33) Update `cosmos/iavl` dependency with memory leak patch (state-sync).
+##[v0.46.11-alpha.ledger.8]
+
+### Improvements
+* (x/distribution) [#35](https://github.com/evmos/cosmos-sdk/pull/35) Add `DistributionAuthorization` authz type 
+
+
+## [v0.46.11-alpha.ledger.7](https://github.com/evmos/cosmos-sdk/releases/tag/v0.46.11-alpha.ledger.7) - 2022-05-22
 
 ### Improvements
 
 * (simapp) [#15305](https://github.com/cosmos/cosmos-sdk/pull/15305) Add `AppStateFnWithExtendedCb` with callback function to extend rawState and `AppStateRandomizedFnWithState` with extra genesisState argument which is the genesis state of the app.
 * (x/distribution) [#29](https://github.com/evmos/cosmos-sdk/pull/29) Add `Querier` to distribution module.
-* (x/distribution) [#35](https://github.com/evmos/cosmos-sdk/pull/35) Add `DistributionAuthorization` authz type 
 
 ## [v0.46.11-alpha.ledger](https://github.com/evmos/cosmos-sdk/releases/tag/v0.46.11-alpha.ledger) - 2022-03-23
 
