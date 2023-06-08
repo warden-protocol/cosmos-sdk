@@ -39,7 +39,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Bug Fixes
 
-##[v0.46.11-alpha.ledger.8]
+## [v0.46.11-alpha.ledger.8]
 
 ### Improvements
 * (x/distribution) [#35](https://github.com/evmos/cosmos-sdk/pull/35) Add `DistributionAuthorization` authz type 
