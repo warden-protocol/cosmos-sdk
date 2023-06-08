@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/x/distribution/keeper"
+
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
@@ -34,7 +36,8 @@ func (suite *KeeperTestSuite) SetupTest() {
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	queryHelper := baseapp.NewQueryServerTestHelper(ctx, app.InterfaceRegistry())
-	types.RegisterQueryServer(queryHelper, app.DistrKeeper)
+	querySrv := keeper.NewQuerier(app.DistrKeeper)
+	types.RegisterQueryServer(queryHelper, querySrv)
 	queryClient := types.NewQueryClient(queryHelper)
 
 	suite.app = app
@@ -350,7 +353,8 @@ func (suite *KeeperTestSuite) TestGRPCDelegationRewards() {
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	queryHelper := baseapp.NewQueryServerTestHelper(ctx, app.InterfaceRegistry())
-	types.RegisterQueryServer(queryHelper, app.DistrKeeper)
+	querySrv := keeper.NewQuerier(app.DistrKeeper)
+	types.RegisterQueryServer(queryHelper, querySrv)
 	queryClient := types.NewQueryClient(queryHelper)
 
 	val := app.StakingKeeper.Validator(ctx, valAddrs[0])
