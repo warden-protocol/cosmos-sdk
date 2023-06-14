@@ -35,6 +35,12 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+* (deps) [#16553](https://github.com/cosmos/cosmos-sdk/pull/16553) Bump CometBFT to [v0.34.29](https://github.com/cometbft/cometbft/blob/v0.34.29/CHANGELOG.md#v03429).
+
 ## [v0.46.13-alpha.ledger.8](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.46.13-alpha.ledger.8)
 
 ### Improvements
@@ -45,7 +51,6 @@ Ref: https://keepachangelog.com/en/1.0.0/
 ### Bug Fixes
 
 * (x/staking) [#21](https://github.com/evmos/cosmos-sdk/pull/21) Add `CancelUnbondingDelegation` authz.
-
 
 ## [v0.46.13](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.46.13) - 2023-06-08
 
