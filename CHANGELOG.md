@@ -45,6 +45,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Features
 
+* (autz) [#35](https://github.com/evmos/cosmos-sdk/pull/35) Add Distribution authorization
 * (autz) [#21](https://github.com/evmos/cosmos-sdk/pull/21) Add CancelUnbondingDelegation authz
 
 ## [v0.47.5](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.47.5) - 2023-09-01
