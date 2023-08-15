@@ -155,6 +155,12 @@ Ref: https://keepachangelog.com/en/1.0.0/
 - (cli) [#17188](https://github.com/cosmos/cosmos-sdk/pull/17188) Fix `--output-document` flag in `tx multi-sign`.
 - (x/auth) [#17209](https://github.com/cosmos/cosmos-sdk/pull/17209) Internal error on AccountInfo when account's public key is not set.
 
+## [v0.47.4-evmos.2](https://github.com/evmos/cosmos-sdk/releases/tag/v0.47.4-evmos.2) - 2023-08-15
+
+### Improvements
+
+* (cli) [#44](https://github.com/evmos/cosmos-sdk/pull/44) Convert `DefaultGasAdjustment` to `var` to allow customization of the value
+
 ## [v0.47.4-evmos](https://github.com/evmos/cosmos-sdk/releases/tag/v0.47.4-evmos) - 2023-07-31
 
 ### Features
