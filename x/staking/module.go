@@ -206,6 +206,7 @@ type StakingInputs struct {
 	Config        *modulev1.Module
 	AccountKeeper types.AccountKeeper
 	BankKeeper    types.BankKeeper
+	ParamsKeeper  types.ParamsKeeper
 	Cdc           codec.Codec
 	Key           *store.KVStoreKey
 
@@ -228,12 +229,18 @@ func ProvideModule(in StakingInputs) StakingOutputs {
 		authority = authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)
 	}
 
+	ss, found := in.ParamsKeeper.GetSubspace(types.ModuleName)
+	if !found {
+		panic(fmt.Sprintf("%s subspace cannot be found", types.ModuleName))
+	}
+
 	k := keeper.NewKeeper(
 		in.Cdc,
 		in.Key,
 		in.AccountKeeper,
 		in.BankKeeper,
 		authority.String(),
+		ss,
 	)
 	m := NewAppModule(in.Cdc, k, in.AccountKeeper, in.BankKeeper, in.LegacySubspace)
 	return StakingOutputs{StakingKeeper: k, Module: m}

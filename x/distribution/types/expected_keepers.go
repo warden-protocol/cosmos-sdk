@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -28,6 +29,10 @@ type BankKeeper interface {
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 
 	BlockedAddr(addr sdk.AccAddress) bool
+}
+
+type ParamsKeeper interface {
+	GetSubspace(s string) (paramstypes.Subspace, bool)
 }
 
 // StakingKeeper expected staking keeper (noalias)

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"google.golang.org/grpc/codes"
@@ -459,6 +460,7 @@ func (k Querier) Pool(c context.Context, _ *types.QueryPoolRequest) (*types.Quer
 // Params queries the staking parameters
 func (k Querier) Params(c context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
+    fmt.Println("Query Params")
 	params := k.GetParams(ctx)
 
 	return &types.QueryParamsResponse{Params: params}, nil

@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // DistributionKeeper expected distribution keeper (noalias)
@@ -23,6 +24,10 @@ type AccountKeeper interface {
 
 	// TODO remove with genesis 2-phases refactor https://github.com/cosmos/cosmos-sdk/issues/2862
 	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
+}
+
+type ParamsKeeper interface {
+	GetSubspace(s string) (paramstypes.Subspace, bool)
 }
 
 // BankKeeper defines the expected interface needed to retrieve account balances.

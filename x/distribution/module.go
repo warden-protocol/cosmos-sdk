@@ -221,6 +221,7 @@ type DistrInputs struct {
 	AccountKeeper types.AccountKeeper
 	BankKeeper    types.BankKeeper
 	StakingKeeper types.StakingKeeper
+	ParamsKeeper  types.ParamsKeeper
 
 	// LegacySubspace is used solely for migration of x/params managed parameters
 	LegacySubspace exported.Subspace `optional:"true"`
@@ -246,6 +247,11 @@ func ProvideModule(in DistrInputs) DistrOutputs {
 		authority = authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)
 	}
 
+	ss, found := in.ParamsKeeper.GetSubspace(types.ModuleName)
+	if !found {
+		panic(fmt.Sprintf("%s subspace cannot be found", types.ModuleName))
+	}
+
 	k := keeper.NewKeeper(
 		in.Cdc,
 		in.Key,
@@ -254,6 +260,7 @@ func ProvideModule(in DistrInputs) DistrOutputs {
 		in.StakingKeeper,
 		feeCollectorName,
 		authority.String(),
+        ss,
 	)
 
 	m := NewAppModule(in.Cdc, k, in.AccountKeeper, in.BankKeeper, in.StakingKeeper, in.LegacySubspace)

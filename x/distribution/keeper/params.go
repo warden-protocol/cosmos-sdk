@@ -8,14 +8,21 @@ import (
 )
 
 // GetParams returns the total set of distribution parameters.
-func (k Keeper) GetParams(clientCtx sdk.Context) (params types.Params) {
-	store := clientCtx.KVStore(k.storeKey)
+func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
+	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.ParamsKey)
 	if bz == nil {
-		return params
+		return k.GetLegacyParams(ctx)
 	}
 
 	k.cdc.MustUnmarshal(bz, &params)
+	return params
+}
+
+// GetLegacyParams returns param set for version before migrate
+func (k Keeper) GetLegacyParams(ctx sdk.Context) types.Params {
+	var params types.Params
+	k.ss.GetParamSetIfExists(ctx, &params)
 	return params
 }
 
