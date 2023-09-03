@@ -10,6 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // Keeper of the distribution store
@@ -22,6 +23,7 @@ type Keeper struct {
 	// the address capable of executing a MsgUpdateParams message. Typically, this
 	// should be the x/gov module account.
 	authority string
+	ss        paramstypes.Subspace
 
 	feeCollectorName string // name of the FeeCollector ModuleAccount
 }
@@ -30,11 +32,16 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec, key storetypes.StoreKey,
 	ak types.AccountKeeper, bk types.BankKeeper, sk types.StakingKeeper,
-	feeCollectorName string, authority string,
+	feeCollectorName string, authority string, ss ...paramstypes.Subspace,
 ) Keeper {
 	// ensure distribution module account is set
 	if addr := ak.GetModuleAddress(types.ModuleName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
+	}
+
+	// ensure that a param subspace is provided
+	if len(ss) != 1 {
+		panic("must provide a param subspace")
 	}
 
 	return Keeper{
@@ -45,6 +52,7 @@ func NewKeeper(
 		stakingKeeper:    sk,
 		feeCollectorName: feeCollectorName,
 		authority:        authority,
+        ss:               ss[0],
 	}
 }
 

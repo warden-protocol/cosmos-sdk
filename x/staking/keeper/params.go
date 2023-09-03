@@ -70,9 +70,16 @@ func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.ParamsKey)
 	if bz == nil {
-		return params
+		return k.getLegacyParams(ctx)
 	}
 
 	k.cdc.MustUnmarshal(bz, &params)
+	return params
+}
+
+// GetLegacyParams returns param set for version before migrate
+func (k Keeper) getLegacyParams(ctx sdk.Context) types.Params {
+	var params types.Params
+	k.ss.GetParamSetIfExists(ctx, &params)
 	return params
 }

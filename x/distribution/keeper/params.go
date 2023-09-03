@@ -45,3 +45,11 @@ func (k Keeper) GetCommunityTax(ctx sdk.Context) math.LegacyDec {
 func (k Keeper) GetWithdrawAddrEnabled(ctx sdk.Context) (enabled bool) {
 	return k.GetParams(ctx).WithdrawAddrEnabled
 }
+
+
+// GetLegacyParams returns param set for version before migrate
+func (k Keeper) getLegacyParams(ctx sdk.Context) types.Params {
+	var params types.Params
+	k.ss.GetParamSetIfExists(ctx, &params)
+	return params
+}
