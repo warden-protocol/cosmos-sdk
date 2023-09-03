@@ -52,7 +52,7 @@ func NewKeeper(
 		stakingKeeper:    sk,
 		feeCollectorName: feeCollectorName,
 		authority:        authority,
-        ss:               ss[0],
+		ss:               ss[0],
 	}
 }
 

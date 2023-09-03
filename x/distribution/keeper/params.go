@@ -8,11 +8,11 @@ import (
 )
 
 // GetParams returns the total set of distribution parameters.
-func (k Keeper) GetParams(clientCtx sdk.Context) (params types.Params) {
-	store := clientCtx.KVStore(k.storeKey)
+func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
+	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.ParamsKey)
 	if bz == nil {
-		return params
+		return k.getLegacyParams(ctx)
 	}
 
 	k.cdc.MustUnmarshal(bz, &params)
@@ -45,7 +45,6 @@ func (k Keeper) GetCommunityTax(ctx sdk.Context) math.LegacyDec {
 func (k Keeper) GetWithdrawAddrEnabled(ctx sdk.Context) (enabled bool) {
 	return k.GetParams(ctx).WithdrawAddrEnabled
 }
-
 
 // GetLegacyParams returns param set for version before migrate
 func (k Keeper) getLegacyParams(ctx sdk.Context) types.Params {
