@@ -212,3 +212,69 @@ func (k Keeper) withdrawDelegationRewards(ctx sdk.Context, val stakingtypes.Vali
 
 	return finalRewards, nil
 }
+
+func (k Keeper) WithdrawDelegationRewardsWithoutSending(ctx sdk.Context, val stakingtypes.ValidatorI, del stakingtypes.DelegationI) (sdk.Coins, error) {
+	// check existence of delegator starting info
+	if !k.HasDelegatorStartingInfo(ctx, del.GetValidatorAddr(), del.GetDelegatorAddr()) {
+		return nil, types.ErrEmptyDelegationDistInfo
+	}
+
+	// end current period and calculate rewards
+	endingPeriod := k.IncrementValidatorPeriod(ctx, val)
+	rewardsRaw := k.CalculateDelegationRewards(ctx, val, del, endingPeriod)
+	outstanding := k.GetValidatorOutstandingRewardsCoins(ctx, del.GetValidatorAddr())
+
+	// defensive edge case may happen on the very final digits
+	// of the decCoins due to operation order of the distribution mechanism.
+	rewards := rewardsRaw.Intersect(outstanding)
+	if !rewards.IsEqual(rewardsRaw) {
+		logger := k.Logger(ctx)
+		logger.Info(
+			"rounding error withdrawing rewards from validator",
+			"delegator", del.GetDelegatorAddr().String(),
+			"validator", val.GetOperator().String(),
+			"got", rewards.String(),
+			"expected", rewardsRaw.String(),
+		)
+	}
+
+	// truncate reward dec coins, return remainder to community pool
+	finalRewards, remainder := rewards.TruncateDecimal()
+
+	// update the outstanding rewards and the community pool only if the
+	// transaction was successful
+	k.SetValidatorOutstandingRewards(ctx, del.GetValidatorAddr(), types.ValidatorOutstandingRewards{Rewards: outstanding.Sub(rewards)})
+	feePool := k.GetFeePool(ctx)
+	feePool.CommunityPool = feePool.CommunityPool.Add(remainder...)
+	k.SetFeePool(ctx, feePool)
+
+	// decrement reference count of starting period
+	startingInfo := k.GetDelegatorStartingInfo(ctx, del.GetValidatorAddr(), del.GetDelegatorAddr())
+	startingPeriod := startingInfo.PreviousPeriod
+	k.decrementReferenceCount(ctx, del.GetValidatorAddr(), startingPeriod)
+
+	// remove delegator starting info
+	k.DeleteDelegatorStartingInfo(ctx, del.GetValidatorAddr(), del.GetDelegatorAddr())
+
+	if finalRewards.IsZero() {
+		baseDenom, _ := sdk.GetBaseDenom()
+		if baseDenom == "" {
+			baseDenom = sdk.DefaultBondDenom
+		}
+
+		// Note, we do not call the NewCoins constructor as we do not want the zero
+		// coin removed.
+		finalRewards = sdk.Coins{sdk.NewCoin(baseDenom, math.ZeroInt())}
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeWithdrawRewards,
+			sdk.NewAttribute(sdk.AttributeKeyAmount, finalRewards.String()),
+			sdk.NewAttribute(types.AttributeKeyValidator, val.GetOperator().String()),
+			sdk.NewAttribute(types.AttributeKeyDelegator, del.GetDelegatorAddr().String()),
+		),
+	)
+
+	return finalRewards, nil
+}
