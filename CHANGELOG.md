@@ -36,7 +36,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
-## [Unreleased]
+## [v0.50.1-evmos](https://github.com/evmos/cosmos-sdk/releases/tag/v0.50.1-evmos) - 2023-11-22
 
 ### Features
 
