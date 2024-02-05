@@ -425,8 +425,8 @@ func (k BaseKeeper) MintCoins(ctx sdk.Context, moduleName string, amounts sdk.Co
 
 	logger := k.Logger(ctx)
 	logger.Info("minted coins from module account", "amount", amounts.String(), "from", moduleName)
+	logger.Info("The account minting to", acc.GetAddress())
 
-	fmt.Println("The account minting to", acc.GetAddress())
 	// emit mint event
 	ctx.EventManager().EmitEvent(
 		types.NewCoinMintEvent(acc.GetAddress(), amounts),
