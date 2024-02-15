@@ -35,7 +35,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
-## [Unreleased]
+## [v0.47.8-evmos] - 2024-02-15
 
 ## [v0.47.11](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.47.11) - 2024-04-22
 
@@ -112,6 +112,12 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 - (x/gov) [#17910](https://github.com/cosmos/cosmos-sdk/pull/17910) Remove telemetry for counting votes and proposals. It was incorrectly counting votes. Use alternatives, such as state streaming.
 
+## [v0.47.5-evmos.2](https://github.com/evmos/cosmos-sdk/releases/tag/v0.47.4-evmos.2) - 2023-08-15
+
+### Improvements
+
+- (baseapp) [#50](https://github.com/evmos/cosmos-sdk/pull/50) Add Chain ID getter in BaseApp
+
 ## [v0.47.5](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.47.5) - 2023-09-01
 
 ### Features
@@ -141,7 +147,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Improvements
 
-* (cli) [#44](https://github.com/evmos/cosmos-sdk/pull/44) Convert `DefaultGasAdjustment` to `var` to allow customization of the value
+- (cli) [#44](https://github.com/evmos/cosmos-sdk/pull/44) Convert `DefaultGasAdjustment` to `var` to allow customization of the value
 
 ## [v0.47.4-evmos](https://github.com/evmos/cosmos-sdk/releases/tag/v0.47.4-evmos) - 2023-07-31
 
