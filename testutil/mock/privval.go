@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"errors"
 	"github.com/cometbft/cometbft/crypto"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	cmttypes "github.com/cometbft/cometbft/types"
@@ -35,6 +36,19 @@ func (pv PV) SignVote(chainID string, vote *cmtproto.Vote) error {
 		return err
 	}
 	vote.Signature = sig
+
+	var extSig []byte
+	// We only sign vote extensions for non-nil precommits
+	if vote.Type == cmtproto.PrecommitType && !cmttypes.ProtoBlockIDIsNil(&vote.BlockID) {
+		extSignBytes := cmttypes.VoteExtensionSignBytes(chainID, vote)
+		extSig, err = pv.PrivKey.Sign(extSignBytes)
+		if err != nil {
+			return err
+		}
+	} else if len(vote.Extension) > 0 {
+		return errors.New("unexpected vote extension - vote extensions are only allowed in non-nil precommits")
+	}
+	vote.ExtensionSignature = extSig
 	return nil
 }
 
