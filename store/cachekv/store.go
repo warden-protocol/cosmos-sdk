@@ -53,17 +53,12 @@ func (store *Store) GetStoreType() types.StoreType {
 func (store *Store) Get(key []byte) (value []byte) {
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
-
-	types.AssertValidKey(key)
-
 	cacheValue, ok := store.cache[conv.UnsafeBytesToStr(key)]
-	if !ok {
-		value = store.parent.Get(key)
-		store.setCacheValue(key, value, false)
-	} else {
-		value = cacheValue.value
+	if ok {
+		return cacheValue.value
 	}
-
+	// types.AssertValidKey(key)
+	value = store.parent.Get(key)
 	return value
 }
 
@@ -74,7 +69,6 @@ func (store *Store) Set(key []byte, value []byte) {
 
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)
-
 	store.setCacheValue(key, value, true)
 }
 

@@ -107,10 +107,7 @@ func (ckv *CommitKVStoreCache) Get(key []byte) []byte {
 		return valueI.([]byte)
 	}
 
-	// cache miss; write to cache
 	value := ckv.CommitKVStore.Get(key)
-	ckv.cache.Add(keyStr, value)
-
 	return value
 }
 
@@ -119,7 +116,6 @@ func (ckv *CommitKVStoreCache) Get(key []byte) []byte {
 func (ckv *CommitKVStoreCache) Set(key, value []byte) {
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)
-
 	ckv.cache.Add(string(key), value)
 	ckv.CommitKVStore.Set(key, value)
 }
