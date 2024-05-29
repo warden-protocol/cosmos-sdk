@@ -35,7 +35,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
-## [v0.47.8-evmos] - 2024-02-15
+## [v0.47.11-evmos](https://github.com/evmos/cosmos-sdk/releases/tag/v0.47.11-evmos) - 2024-05-29
 
 ## [v0.47.11](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.47.11) - 2024-04-22
 
@@ -59,6 +59,8 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 * (x/auth/vesting) [GHSA-4j93-fm92-rp4m](#bug-fixes) Add `BlockedAddr` check in `CreatePeriodicVestingAccount`.
 * (baseapp) [#19177](https://github.com/cosmos/cosmos-sdk/pull/19177) Fix baseapp `DefaultProposalHandler` same-sender non-sequential sequence.
+
+## [v0.47.8-evmos](https://github.com/evmos/cosmos-sdk/releases/tag/v0.47.8-evmos) - 2024-02-15
 
 ## [v0.47.8](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.47.8) - 2024-01-22
 
