@@ -35,7 +35,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
-## Unreleased
+## [v0.47.12-evmos.2](https://github.com/cosmos/evmos/releases/tag/v0.47.12-evmos.2) - 2024-07-03
 
 * (cache-store) [#52](https://github.com/evmos/cosmos-sdk/pull/52) Add a deep copy method for the store.
 
