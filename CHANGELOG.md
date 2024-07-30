@@ -35,11 +35,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
-## [v0.47.12-evmos.2](https://github.com/cosmos/evmos/releases/tag/v0.47.12-evmos.2) - 2024-07-03
-
-* (cache-store) [#52](https://github.com/evmos/cosmos-sdk/pull/52) Add a deep copy method for the store.
-
-## [v0.47.12-evmos](https://github.com/cosmos/evmos/releases/tag/v0.47.12-evmos) - 2024-06-20
+## [v0.47.13-evmos](https://github.com/cosmos/evmos/releases/tag/v0.47.13-evmos) - 2024-07-30
 
 ## [v0.47.13](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.47.13) - 2024-07-15
 
@@ -47,6 +43,12 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 * (client) [#20912](https://github.com/cosmos/cosmos-sdk/pull/20912) Fix `math.LegacyDec` type deserialization in GRPC queries.
 * (x/group) [#20750](https://github.com/cosmos/cosmos-sdk/pull/20750) x/group shouldn't claim "orm" error codespace. This prevents any chain Cosmos SDK `v0.47` chain to use the ORM module.
+
+## [v0.47.12-evmos.2](https://github.com/cosmos/evmos/releases/tag/v0.47.12-evmos.2) - 2024-07-03
+
+* (cache-store) [#52](https://github.com/evmos/cosmos-sdk/pull/52) Add a deep copy method for the store.
+
+## [v0.47.12-evmos](https://github.com/cosmos/evmos/releases/tag/v0.47.12-evmos) - 2024-06-20
 
 ## [v0.47.12](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.47.12) - 2024-06-10
 
